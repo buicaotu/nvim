@@ -66,11 +66,6 @@ require("lazy").setup({
      "nvim-treesitter/nvim-treesitter",
    },
   },
-  {
-   "nvim-treesitter/playground",
-   lazy = true,
-   -- cmd = "",
-  },
   -- file explorer
   "stevearc/oil.nvim",
   {
