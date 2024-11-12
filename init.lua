@@ -108,7 +108,6 @@ require("lazy").setup({
   'j-hui/fidget.nvim',
   'christoomey/vim-tmux-navigator',  -- use CTRL+hjkl to navigate between nvim windows/tmux pane
   'rhysd/conflict-marker.vim', -- "highlight conflicts
-  'numToStr/Comment.nvim',
   'JoosepAlviste/nvim-ts-context-commentstring', -- change comment syntax based on context
   'tomasiser/vim-code-dark', -- Code theme
   -- " Plug 'rebelot/kanagawa.nvim',
