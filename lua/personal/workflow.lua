@@ -84,6 +84,30 @@ local function diff_branch_factory(base_branch)
   end
 end
 
+local function diff_specific_commit(commit)
+  current_commit = commit
+  local list = git_diff(commit)
+  local qflist = {}
+  for i, v in ipairs(list) do
+    qflist[i] = {
+      filename = v,
+      lnum = 1,
+    }
+  end
+  local result = vim.fn.setqflist({}, ' ', {
+    title = 'Diff ' .. commit,
+    items = qflist
+  })
+  if result == 0 then
+    vim.cmd('copen')
+  else
+    error('failed to set qflist with diff result' .. result)
+  end
+end
+
+vim.api.nvim_create_user_command('DiffCommit', function(opts)
+  diff_specific_commit(opts.args)
+end, { nargs = 1 })
 vim.api.nvim_create_user_command('DiffGreen', diff_branch_factory('green'), {})
 vim.api.nvim_create_user_command('DiffMaster', diff_branch_factory('master'), {})
 
@@ -92,5 +116,4 @@ vim.keymap.set('n', '<leader>dg', function()
 end, opts)
 
 vim.api.nvim_create_user_command('Wa', ':wa', {})
-
--- 
+ 
