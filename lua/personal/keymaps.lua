@@ -87,3 +87,13 @@ vim.keymap.set('i', '<C-J>', 'copilot#Accept("\\<CR>")', {
 })
 vim.g.copilot_no_tab_map = true
 
+-- Keymaps for both normal and visual modes
+vim.keymap.set({"n", "v"}, "<leader>cco", function()
+  vim.cmd("CopilotChatOpen")
+end, { desc = "CopilotChat - Open chat", noremap = true, silent = true, nowait = true })
+
+vim.keymap.set({"n", "v"}, "<leader>ccp", function()
+  local actions = require("CopilotChat.actions")
+  require("CopilotChat.integrations.fzflua").pick(actions.prompt_actions())
+end, { desc = "CopilotChat - Prompt actions", noremap = true, silent = true, nowait = true })
+
