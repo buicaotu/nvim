@@ -1,11 +1,4 @@
-local status_ok, configs = pcall(require, "vscode.colors")
-if not status_ok then
-	return
-end
-
-local c = configs.get_colors()
-vim.o.background = 'dark'
-require('vscode').setup({
+local opts = {
     -- Alternatively set style in setup
     -- style = 'light'
 
@@ -29,13 +22,6 @@ require('vscode').setup({
     --     -- use colors from this colorscheme by requiring vscode.colors!
     --     Cursor = { fg=c.vscDarkBlue, bg=c.vscLightGreen, bold=true },
     -- }
-})
-require('vscode').load()
+}
 
-local fn = vim.fn
-
-function get_color(group, attr)
-    return fn.synIDattr(fn.synIDtrans(fn.hlID(group)), attr)
-end
-
-print(get_color("Normal", "bg#"))
+return opts

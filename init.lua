@@ -126,10 +126,14 @@ require("lazy").setup({
   'christoomey/vim-tmux-navigator',  -- use CTRL+hjkl to navigate between nvim windows/tmux pane
   'rhysd/conflict-marker.vim', -- "highlight conflicts
   'JoosepAlviste/nvim-ts-context-commentstring', -- change comment syntax based on context
-  'tomasiser/vim-code-dark', -- Code theme
-  -- " Plug 'rebelot/kanagawa.nvim',
-  -- " Plug 'folke/tokyonight.nvim' 
-  'Mofiqul/vscode.nvim',
+  {
+    'Mofiqul/vscode.nvim',
+    opts = require("personal.colorscheme"),
+    init = function()
+      vim.o.background = 'dark'
+      vim.cmd.colorscheme "vscode"
+    end
+  },
   'lukas-reineke/indent-blankline.nvim', -- " Show horizontal back line
   {
     url = "org-2562356@github.com:Canva/dprint-vim-plugin.git",
@@ -147,7 +151,6 @@ require "personal.options"
 require "personal.treesitter"
 require "personal.keymaps"
 require "personal.comment"
-require "personal.vscode-colors"
 require "personal.lsp"
 -- require "personal.neotest"
 -- require "personal.gitsigns"
