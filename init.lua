@@ -157,4 +157,5 @@ require "personal.lualine"
 require "personal.oil"
 require "personal.fidget"
 require "personal.term"
+require "personal.copilot"
 
