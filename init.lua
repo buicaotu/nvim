@@ -109,8 +109,9 @@ require("lazy").setup({
   "tpope/vim-rhubarb",  -- hub in github
   "tpope/vim-dispatch",
   {
-   'nvim-lualine/lualine.nvim',
-   dependencies = { 'nvim-tree/nvim-web-devicons' }
+    'nvim-lualine/lualine.nvim',
+    opts = {},
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
   },
 
   -- Misc
@@ -157,7 +158,7 @@ require "personal.lsp"
 require "personal.fzf"
 require "personal.workflow"
 require "personal.dap"
-require "personal.lualine"
+-- require "personal.lualine"
 require "personal.oil"
 require "personal.term"
 
