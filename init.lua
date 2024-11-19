@@ -60,9 +60,7 @@ require("lazy").setup({
       { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
     },
     build = "make tiktoken", -- Only on MacOS or Linux
-    opts = {
-      -- See Configuration section for options
-    },
+    opts = require("personal.copilot"),
     -- See Commands section for default commands if you want to lazy load on them
   },
 
@@ -157,5 +155,4 @@ require "personal.lualine"
 require "personal.oil"
 require "personal.fidget"
 require "personal.term"
-require "personal.copilot"
 
