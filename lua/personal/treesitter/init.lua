@@ -55,6 +55,10 @@ configs.setup({
           query = "@jsxa",
           desc = "Select JSX attribute",
         },
+        ["``"] = {
+          query = "@code_block",
+          des   = "Markdown code block",
+        }
       },
       -- You can choose the select mode (default is charwise 'v')
       --
