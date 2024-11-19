@@ -119,7 +119,10 @@ require("lazy").setup({
   'folke/neodev.nvim', -- nvim lua dev env
   -- 'jbyuki/one-small-step-for-vimkind', -- nvim lua debug adapter
   'nvim-lua/plenary.nvim', -- lua utils
-  'j-hui/fidget.nvim',
+  { 
+    'j-hui/fidget.nvim',
+    opts = {},
+  },
   'christoomey/vim-tmux-navigator',  -- use CTRL+hjkl to navigate between nvim windows/tmux pane
   'rhysd/conflict-marker.vim', -- "highlight conflicts
   'JoosepAlviste/nvim-ts-context-commentstring', -- change comment syntax based on context
@@ -153,6 +156,5 @@ require "personal.workflow"
 require "personal.dap"
 require "personal.lualine"
 require "personal.oil"
-require "personal.fidget"
 require "personal.term"
 
