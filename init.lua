@@ -158,7 +158,6 @@ require "personal.lsp"
 require "personal.fzf"
 require "personal.workflow"
 require "personal.dap"
--- require "personal.lualine"
 require "personal.oil"
 require "personal.term"
 

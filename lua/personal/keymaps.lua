@@ -32,18 +32,6 @@ keymap("x", "<M-k>", ":move '<-2<CR>gv-gv", opts)
 -- Undo tree --
 vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle, opts)
 
-
--- Map function and class text objects
--- NOTE: Requires 'textDocument.documentSymbol' support from the language server
--- vim.keymap.set("x", "if", "<Plug>(coc-funcobj-i)", opts)
--- vim.keymap.set("o", "if", "<Plug>(coc-funcobj-i)", opts)
--- vim.keymap.set("x", "af", "<Plug>(coc-funcobj-a)", opts)
--- vim.keymap.set("o", "af", "<Plug>(coc-funcobj-a)", opts)
--- vim.keymap.set("x", "ic", "<Plug>(coc-classobj-i)", opts)
--- vim.keymap.set("o", "ic", "<Plug>(coc-classobj-i)", opts)
--- vim.keymap.set("x", "ac", "<Plug>(coc-classobj-a)", opts)
--- vim.keymap.set("o", "ac", "<Plug>(coc-classobj-a)", opts)
-
 -- clipboard
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', opts)
 vim.keymap.set({ "n", "v" }, "<leader>p", '"+p', opts)
@@ -70,6 +58,9 @@ vim.keymap.set('t', '<c-r>', function()
   local next_char = vim.fn.nr2char(next_char_code)
   return '<C-\\><C-N>"' .. next_char .. 'pi'
 end, { expr = true })
+
+-- Close current window or buffer if it's the last window
+vim.api.nvim_set_keymap('n', '<leader>q', ':lua if #vim.api.nvim_list_wins() == 1 then vim.cmd("bd") else vim.cmd("q") end<CR>', { noremap = true, silent = true })
 
 -- buffer
 vim.keymap.set('n', '<leader>x', ':bn|bd#<CR>', opts)
