@@ -88,3 +88,13 @@ vim.keymap.set({"n", "v"}, "<leader>cp", function()
   require("CopilotChat.integrations.fzflua").pick(actions.prompt_actions())
 end, { desc = "CopilotChat - Prompt actions", noremap = true, silent = true, nowait = true })
 
+
+vim.keymap.set({ "n", "v" }, "<leader>aa", function()
+  require("avante.api").ask()
+end, opts)
+vim.keymap.set({ "v" }, "<leader>ar", function()
+  require("avante.api").refresh()
+end, opts)
+vim.keymap.set({ "n", "v" }, "<leader>ae", function()
+  require("avante.api").edit()
+end, opts)

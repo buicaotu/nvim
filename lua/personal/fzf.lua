@@ -20,6 +20,9 @@ fzflua.setup({
   oldfiles = {
     previewer = false,
   },
+  previewers = {
+    syntax_limit_b = 1024 * 100, -- 100KB
+  }
 })
 
 local opts = { noremap = true, silent = true, nowait = true }
