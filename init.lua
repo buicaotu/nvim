@@ -52,83 +52,12 @@ require("lazy").setup({
 
   -- copilot
   "github/copilot.vim",
-  -- {
-  --   "CopilotC-Nvim/CopilotChat.nvim",
-  --   branch = "canary",
-  --   dependencies = {
-  --     { "github/copilot.vim" },
-  --     { "nvim-lua/plenary.nvim" }, -- for curl, log wrapper
-  --   },
-  --   build = "make tiktoken", -- Only on MacOS or Linux
-  --   opts = require("personal.copilot"),
-  --   -- See Commands section for default commands if you want to lazy load on them
-  -- },
   {
     "yetone/avante.nvim",
     event = "VeryLazy",
     lazy = false,
     version = false, -- set this if you want to always pull the latest change
-    -- keys = function(_, keys)
-    --   ---@type avante.Config
-    --   local opts =
-    --     require("lazy.core.plugin").values(require("lazy.core.config").spec.plugins["avante.nvim"], "opts", false)
-    --
-    --   local mappings = {
-    --     {
-    --       opts.mappings.ask,
-    --       function() require("avante.api").ask() end,
-    --       desc = "avante: ask",
-    --       mode = { "n", "v" },
-    --     },
-    --     {
-    --       opts.mappings.refresh,
-    --       function() require("avante.api").refresh() end,
-    --       desc = "avante: refresh",
-    --       mode = "v",
-    --     },
-    --     {
-    --       opts.mappings.edit,
-    --       function() require("avante.api").edit() end,
-    --       desc = "avante: edit",
-    --       mode = { "n", "v" },
-    --     },
-    --   }
-    --   mappings = vim.tbl_filter(function(m) return m[1] and #m[1] > 0 end, mappings)
-    --   print('avante mappings', vim.inspect(mappings))
-    --   return vim.list_extend(mappings, keys)
-    -- end,
-    opts = {
-      -- add any opts here
-      provider = "copilot",
-      auto_suggestions_provider = "copilot",
-      -- openai = {
-      --   api_key_name = {"op", "read", "op://Private/OpenAI-Canva/credential"},
-      -- },
-      file_selector = {
-        provider = "fzf",
-        provider_opts = {
-          ---@param params avante.file_selector.opts.IGetFilepathsParams
-          get_filepaths = function(params)
-            local cwd = params.cwd ---@type string
-            local selected_filepaths = params.selected_filepaths ---@type string[]
-            local cmd = string.format("fd --base-directory '%s' --hidden", vim.fn.fnameescape(cwd))
-            local output = vim.fn.system(cmd)
-            local filepaths = vim.split(output, "\n", { trimempty = true })
-            return vim
-              .iter(filepaths)
-              :filter(function(filepath)
-                return not vim.tbl_contains(selected_filepaths, filepath)
-              end)
-              :totable()
-          end
-        }
-      },
-      mappings = {
-        ask = "<leader>aa", -- ask
-        edit = "<leader>ae", -- edit
-        refresh = "<leader>ar", -- refresh
-      },
-    },
+    opts = require("personal.avante"),
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
     build = "make",
     -- build = "powershell -ExecutionPolicy Bypass -File Build.ps1 -BuildFromSource false" -- for windows
