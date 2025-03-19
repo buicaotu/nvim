@@ -1,45 +1,54 @@
-local status_ok, lsp_zero = pcall(require, "lsp-zero")
-if not status_ok then
-  return
-end
-
+local lspconfig = require('lspconfig')
 local lspformat = require('lsp-format')
 lspformat.setup({})
 
-lsp_zero.on_attach(function(client, bufnr)
-  -- see :help lsp-zero-keybindings
-  -- to learn the available actions
-  lsp_zero.default_keymaps({ buffer = bufnr })
+-- Global capabilities
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+capabilities.textDocument.completion.completionItem.preselectSupport = true
+capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
+capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
+capabilities.textDocument.completion.completionItem.deprecatedSupport = true
+capabilities.textDocument.completion.completionItem.preselectSupport = true
+capabilities.textDocument.completion.completionItem.tagSupport = {
+  valueSet = { 1 }
+}
+capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
 
-  -- format on save -- SYNC
-  -- lsp_zero.buffer_autoformat()
+-- Global on_attach function
+local on_attach = function(client, bufnr)
+  -- Keymaps
+  local opts = { noremap = true, silent = true, buffer = bufnr }
+  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+  vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+  vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+  vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
+  vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
+  vim.keymap.set('n', '<leader>wl', function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, opts)
+  vim.keymap.set('n', '<leader>D', vim.lsp.buf.type_definition, opts)
+  vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+  vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+  vim.keymap.set('n', '<leader>f', function()
+    vim.lsp.buf.format { async = true }
+  end, opts)
+end
 
-  -- format on save -- ASYNC
-  -- make sure you use clients with formatting capabilities
-  -- otherwise you'll get a warning message
-  -- if client.supports_method('textDocument/formatting') then
-  --   lspformat.on_attach(client)
-  -- end
-end)
-
+-- Setup mason
 require('mason').setup({})
 require("mason-lspconfig").setup({
   ensure_installed = { "ts_ls", "eslint", "efm" },
   automatic_installation = false,
-  handlers = {
-    lsp_zero.default_setup,
-  },
 })
 
-local lspconfig = require('lspconfig')
-
 lspconfig.eslint.setup({
-  -- codeActionOnSave = {
-  --   enable = true,
-  --   mode = "all"
-  -- },
+  capabilities = capabilities,
   on_attach = function(client, bufnr)
-    -- todo use init_options?
+    on_attach(client, bufnr)
     client.server_capabilities.documentFormattingProvider = false
     vim.api.nvim_create_autocmd("BufWritePre", {
       buffer = bufnr,
@@ -49,6 +58,8 @@ lspconfig.eslint.setup({
 })
 
 lspconfig.denols.setup({
+  capabilities = capabilities,
+  on_attach = on_attach,
   root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
   init_options = {
     enable = true,
@@ -59,19 +70,16 @@ lspconfig.denols.setup({
 })
 
 lspconfig.ts_ls.setup({
+  capabilities = capabilities,
+  on_attach = function(client, bufnr)
+    on_attach(client, bufnr)
+    client.server_capabilities.documentFormattingProvider = false
+  end,
   single_file_support = false,
   root_dir = lspconfig.util.root_pattern("package.json"),
   init_options = {
     preferences = {
-      -- includeInlayParameterNameHints = 'all',
-      -- includeInlayParameterNameHintsWhenArgumentMatchesName = true,
-      -- includeInlayFunctionParameterTypeHints = true,
-      -- includeInlayVariableTypeHints = true,
-      -- includeInlayPropertyDeclarationTypeHints = true,
-      -- includeInlayFunctionLikeReturnTypeHints = true,
-      -- includeInlayEnumMemberValueHints = true,
-      -- importModuleSpecifierPreference = 'non-relative',
-      includeInlayParameterNameHints = 'all', -- 'none' | 'literals' | 'all';
+      includeInlayParameterNameHints = 'all',
       includeInlayParameterNameHintsWhenArgumentMatchesName = true,
       includeInlayFunctionParameterTypeHints = true,
       includeInlayVariableTypeHints = true,
@@ -81,11 +89,6 @@ lspconfig.ts_ls.setup({
       includeInlayEnumMemberValueHints = true,
     },
   },
-  on_attach = function(client, bufnr)
-    -- dont use tsserver to format
-    -- todo use init_options?
-    client.server_capabilities.documentFormattingProvider = false
-  end
 })
 
 local prettier = {
@@ -94,14 +97,6 @@ local prettier = {
 }
 local prettier_work = {
   formatCommand = "./web/node_modules/.bin/prettier --stdin-filepath ${INPUT}",
-  formatStdin = true,
-}
-local dprint = {
-  formatCommand = "./tools/dprint/dprint fmt -- ${INPUT}",
-  formatStdin = false,
-}
-local dprint_stdin = {
-  formatCommand = "./tools/dprint/dprint fmt --stdin ${INPUT}",
   formatStdin = true,
 }
 
@@ -115,6 +110,13 @@ end
 
 -- Set up efm-langserver
 lspconfig.efm.setup {
+  capabilities = capabilities,
+  on_attach = function(client, bufnr)
+    on_attach(client, bufnr)
+    if client.server_capabilities.documentFormattingProvider then
+      vim.api.nvim_command('autocmd BufWritePre <buffer> lua vim.lsp.buf.format()')
+    end
+  end,
   init_options = { documentFormatting = not work_dir },
   root_dir = function(fname)
     return lspconfig.util.root_pattern('.prettierrc', '.prettierrc.js', '.git')(fname) or vim.loop.cwd()
@@ -133,72 +135,36 @@ lspconfig.efm.setup {
   },
   filetypes = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
   timeout_ms = 10000,
-  on_attach = function(client, bufnr)
-    if client.server_capabilities.documentFormattingProvider then
-      vim.api.nvim_command('autocmd BufWritePre <buffer> lua vim.lsp.buf.format()')
-    end
-  end,
 }
 
 local cmp = require('cmp')
--- local luasnip = require('luasnip')
-local cmp_action = require('lsp-zero').cmp_action()
-
 cmp.setup({
   sources = {
     { name = 'nvim_lsp' },
     { name = 'nvim_lua' },
   },
-
-  -- always select first item
   preselect = 'item',
   completion = {
     completeopt = 'menu,menuone,noinsert'
   },
-
   mapping = cmp.mapping.preset.insert({
-
-    -- ["<Tab>"] = cmp.mapping(function(fallback)
-    --   if cmp.visible() then
-    --     cmp.select_next_item()
-    --   elseif luasnip.expand_or_jumpable() then
-    --     luasnip.expand_or_jump()
-    --   -- elseif has_words_before() then
-    --   --   cmp.complete()
-    --   else
-    --     fallback()
-    --   end
-    -- end, { "i", "s" }),
-
-    -- ["<S-Tab>"] = cmp.mapping(function(fallback)
-    --   if cmp.visible() then
-    --     cmp.select_prev_item()
-    --   elseif luasnip.jumpable(-1) then
-    --     luasnip.jump(-1)
-    --   else
-    --     fallback()
-    --   end
-    -- end, { "i", "s" }),
-
-    ['<Tab>'] = cmp_action.luasnip_supertab(),
-    ['<S-Tab>'] = cmp_action.luasnip_shift_supertab(),
-    -- `Enter` key to confirm completion
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
     ['<CR>'] = cmp.mapping.confirm({ select = false }),
-
-    -- Ctrl+Space to trigger completion menu
     ['<C-Space>'] = cmp.mapping.complete(),
-
-    -- Navigate between snippet placeholder
-    ['<C-f>'] = cmp_action.luasnip_jump_forward(),
-    ['<C-b>'] = cmp_action.luasnip_jump_backward(),
-
-    -- Scroll up and down in the completion documentation
     ['<C-u>'] = cmp.mapping.scroll_docs(-4),
     ['<C-d>'] = cmp.mapping.scroll_docs(4),
   })
 })
-
--- local has_words_before = function()
---   local line, col = unpack(vim.api.nvim_win_get_cursor(0))
---   return col ~= 0 and vim.api.nvim_buf_get_lines(0, line - 1, line, true)[1]:sub(col, col):match("%s") == nil
--- end
