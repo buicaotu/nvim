@@ -49,7 +49,13 @@ lspconfig.eslint.setup({
 })
 
 lspconfig.denols.setup({
-  root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc")
+  root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+  init_options = {
+    enable = true,
+    lint = true,
+    unstable = false,
+    importMap = "./deno.json" 
+  }
 })
 
 lspconfig.ts_ls.setup({
