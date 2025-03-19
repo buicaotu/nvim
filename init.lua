@@ -11,26 +11,6 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-local function get_git_root()
-  local handle = io.popen("git rev-parse --show-toplevel 2>/dev/null")
-  if handle then
-    local result = handle:read("*l")
-    handle:close()
-    return result
-  end
-end
-
-local git_root = get_git_root()
-if git_root then
-  local dprint_dir = git_root .. "/tools/dprint"
-  if vim.fn.isdirectory(dprint_dir) == 1 then
-    vim.g.dprint_dir = dprint_dir
-    vim.g.dprint_format_on_save = 1 
-    vim.g.dprint_system_command = 'Dispatch'
-    vim.g.dprint_debug = 0
-  end
-end
-
 require("lazy").setup({
   {
    "VonHeikemen/lsp-zero.nvim",
@@ -172,7 +152,8 @@ require("lazy").setup({
   'lukas-reineke/indent-blankline.nvim', -- " Show horizontal back line
   {
     url = "org-2562356@github.com:Canva/dprint-vim-plugin.git",
-    lazy = false,
+    event = "BufWritePre",
+    lazy = true,
   }
 })
 
@@ -195,3 +176,4 @@ require "personal.dap"
 require "personal.oil"
 require "personal.term"
 
+require("personal.dprint").setup()
