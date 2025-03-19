@@ -40,7 +40,7 @@ configs.setup({
         -- nvim_buf_set_keymap) which plugins like which-key display
         ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
         -- You can also use captures from other query groups like `locals.scm`
-        ["as"] = { query = "@scope", query_group = "locals", desc = "Select language scope" },
+        -- ["as"] = { query = "@scope", query_group = "locals", desc = "Select language scope" },
         ["ax"] = "@comment.outer",
         -- Define 'iq' as inner quote and 'aq' as a quote
         ["iq"] = {
@@ -97,7 +97,7 @@ configs.setup({
         --
         -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path.
         -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
-        ["]s"] = { query = "@scope", query_group = "locals", desc = "Next scope" },
+        -- ["]s"] = { query = "@scope", query_group = "locals", desc = "Next scope" },
         ["]z"] = { query = "@fold", query_group = "folds", desc = "Next fold" },
         ["]q"] = { query = "@quote.outer", desc = "Next quote" },
         ["]x"] = { query = "@comment.outer", desc = "Next comment" },

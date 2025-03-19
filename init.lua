@@ -122,6 +122,10 @@ require("lazy").setup({
 
   -- Misc
   { 'echasnovski/mini.move', version = false, opts = {} },
+  {
+    "folke/snacks.nvim", 
+    opts = require("personal.snacks"),
+  },
   'cohama/lexima.vim', -- Autopair
   -- 'mbbill/undotree',
   'folke/neodev.nvim', -- nvim lua dev env
