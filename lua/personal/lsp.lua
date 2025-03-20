@@ -138,6 +138,20 @@ lspconfig.efm.setup {
   timeout_ms = 10000,
 }
 
+-- Diagnostic navigation with repeat support
+local ts_repeat_move_status, ts_repeat_move = pcall(require, "nvim-treesitter.textobjects.repeatable_move")
+if ts_repeat_move_status then
+  -- Register the diagnostic navigation functions with repeatable_move
+  local next_diagnostic, prev_diagnostic = ts_repeat_move.make_repeatable_move_pair(
+    vim.diagnostic.goto_next, 
+    vim.diagnostic.goto_prev
+  )
+
+  -- Map the diagnostic navigation to use repeatable_move
+  vim.keymap.set('n', ']d', next_diagnostic, { noremap = true, silent = true })
+  vim.keymap.set('n', '[d', prev_diagnostic, { noremap = true, silent = true })
+end
+
 local cmp = require('cmp')
 cmp.setup({
   sources = {
