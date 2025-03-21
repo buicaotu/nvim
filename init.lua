@@ -15,10 +15,6 @@ require "personal.keymaps"
 
 require("lazy").setup("plugins")
 
--- import file
-local vimrc = vim.fn.stdpath("config") .. "/vimrc.vim"
-vim.cmd.source(vimrc)
-
 require "personal.options"
 require "personal.treesitter"
 require "personal.comment"

@@ -3,6 +3,10 @@ if not status_ok then
   return
 end
 
+-- FZF settings
+vim.env.FZF_DEFAULT_COMMAND = 'fd --type file --follow --hidden --exclude .git'
+vim.g.fzf_history_dir = '~/.local/share/fzf-history'
+
 local opts = { noremap = true, silent = true, nowait = true }
 -- grep word under cursor
 vim.keymap.set("n", "<leader>r", function ()

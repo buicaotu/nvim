@@ -87,3 +87,9 @@ end, opts)
 vim.keymap.set({ "n", "v" }, "<leader>ae", function()
   require("avante.api").edit()
 end, opts)
+
+-- Window resize
+vim.keymap.set('n', '<M-Left>', ':vertical resize -5<CR>', opts)
+vim.keymap.set('n', '<M-Right>', ':vertical resize +5<CR>', opts)
+vim.keymap.set('n', '<M-Down>', ':resize -5<CR>', opts)
+vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
