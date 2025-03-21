@@ -8,7 +8,6 @@ set tabstop=2
 set softtabstop=2
 set shiftwidth=2
 set expandtab "expand tabs to spaces
-" let mapleader=","
 set mouse=a " Use mouse
 " set number " Show line number
 set list
