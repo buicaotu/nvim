@@ -70,7 +70,6 @@ return {
 
   -- Misc
   { 'cohama/lexima.vim' },
-  { 'folke/neodev.nvim' },
   { 'nvim-lua/plenary.nvim' },
   { 'christoomey/vim-tmux-navigator' },
   { 'rhysd/conflict-marker.vim' },

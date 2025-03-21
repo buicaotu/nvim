@@ -16,17 +16,14 @@ require "personal.keymaps"
 require("lazy").setup("plugins")
 
 -- import file
--- require "personal.packer"
 local vimrc = vim.fn.stdpath("config") .. "/vimrc.vim"
 vim.cmd.source(vimrc)
 
-require "personal.neodev"
 require "personal.options"
 require "personal.treesitter"
 require "personal.comment"
 require "personal.lsp"
 -- require "personal.neotest"
--- require "personal.gitsigns"
 require "personal.fzf"
 require "personal.workflow"
 require "personal.dap"
