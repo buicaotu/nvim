@@ -3,28 +3,6 @@ if not status_ok then
   return
 end
 
-fzflua.setup({
-  "fzf-vim",
-  winopts = {
-    preview = { hidden = "nohidden" },
-  },
-  files = {
-    -- disable previewer for file search only
-    previewer = false,
-    git_icons = false,
-  },
-  buffers = {
-    previewer = false,
-    git_icons = false,
-  },
-  oldfiles = {
-    previewer = false,
-  },
-  previewers = {
-    syntax_limit_b = 1024 * 100, -- 100KB
-  }
-})
-
 local opts = { noremap = true, silent = true, nowait = true }
 -- grep word under cursor
 vim.keymap.set("n", "<leader>r", function ()

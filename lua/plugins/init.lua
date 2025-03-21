@@ -29,10 +29,6 @@ return {
 
   -- File explorer
   { "stevearc/oil.nvim" },
-  {
-    "ibhagwan/fzf-lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" }
-  },
 
   -- Debug
   { "mfussenegger/nvim-dap" },
