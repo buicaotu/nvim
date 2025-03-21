@@ -35,22 +35,6 @@ local function files_current_dir()
   })
 end
 
-
-oil.setup({
-  keymaps = {
-    ['<leader>y'] = 'actions.copy_entry_path',
-    ['<leader>c'] = 'actions.cd',
-    ['<leader>r'] = grep_current_dir,
-    ['<leader>s'] = files_current_dir,
-    ['<leader>v'] = 'actions.select_vsplit',
-    ['<leader>i'] = 'actions.preview',
-    ['<Tab>'] = 'actions.select',
-    -- remove original keymapping
-    ['<C-p>'] = false, -- preview
-    ['<C-h>'] = false, -- split
-  }
-})
-
 local opts = { noremap = true, silent = true, nowait = true }
 -- Open file explorer
 vim.keymap.set("n", "<C-n>", function()

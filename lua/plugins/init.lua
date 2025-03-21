@@ -27,9 +27,6 @@ return {
     },
   },
 
-  -- File explorer
-  { "stevearc/oil.nvim" },
-
   -- Debug
   { "mfussenegger/nvim-dap" },
   { "rcarriga/nvim-dap-ui" },
