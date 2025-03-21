@@ -61,10 +61,6 @@ return {
   { "tpope/vim-dispatch" },
 
   -- UI
-  {
-    'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
-  },
   { 'j-hui/fidget.nvim', opts = {} },
   { 'echasnovski/mini.move', version = false, opts = {} },
 
