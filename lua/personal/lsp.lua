@@ -138,6 +138,19 @@ lspconfig.efm.setup {
   timeout_ms = 10000,
 }
 
+lspconfig.lua_ls.setup({
+  capabilities = capabilities,
+  on_attach = on_attach,
+  settings = {
+    Lua = {
+      runtime = { version = 'LuaJIT' },
+      diagnostics = { globals = { 'vim' } },
+      workspace = { library = vim.api.nvim_get_runtime_file('', true) },
+      telemetry = { enable = false },
+    },
+  },
+})
+
 -- Diagnostic navigation with repeat support
 local ts_repeat_move_status, ts_repeat_move = pcall(require, "nvim-treesitter.textobjects.repeatable_move")
 if ts_repeat_move_status then

@@ -11,10 +11,7 @@ vim.api.nvim_create_user_command('SS', function()
     local file_path = vim.fn.expand('%')
     vim.cmd('source ' .. file_path)
     print('source file ' .. file_path)
-  end, {})
-vim.api.nvim_create_user_command('EditNvimConfig', function()
-    vim.cmd('e ~/.config/nvim')
-  end, {})
+end, {})
 
 function P(obj)
   print(vim.inspect(obj))
@@ -88,50 +85,6 @@ local function diff_specific_commit(commit)
   create_qflist('Diff ' .. commit, list)
 end
 
--- -- find a base commit and perform diff and save it to the quickfix list
--- local function diff_branch(base_branch)
---   local commit = find_merge_base(base_branch)
---   current_commit = commit
---   local list = git_diff(current_commit)
---   local qflist = {}
---   for i, v in ipairs(list) do
---     qflist[i] = {
---       filename = v,
---       lnum = 1,
---     }
---   end
---   local result = vim.fn.setqflist({}, ' ', {
---     title = 'Diff ' .. base_branch,
---     items = qflist
---   })
---   if result == 0 then
---     vim.cmd('copen')
---   else
---     error('failed to set qflist with diff result' .. result)
---   end
--- end
---
--- local function diff_specific_commit(commit)
---   current_commit = commit
---   local list = git_diff(commit)
---   local qflist = {}
---   for i, v in ipairs(list) do
---     qflist[i] = {
---       filename = v,
---       lnum = 1,
---     }
---   end
---   local result = vim.fn.setqflist({}, ' ', {
---     title = 'Diff ' .. commit,
---     items = qflist
---   })
---   if result == 0 then
---     vim.cmd('copen')
---   else
---     error('failed to set qflist with diff result' .. result)
---   end
--- end
---
 local function diff_branch_factory(base_branch)
   return function ()
     diff_branch(base_branch)
