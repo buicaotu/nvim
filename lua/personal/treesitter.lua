@@ -43,11 +43,11 @@ configs.setup({
         -- ["as"] = { query = "@scope", query_group = "locals", desc = "Select language scope" },
         ["ax"] = "@comment.outer",
         -- Define 'iq' as inner quote and 'aq' as a quote
-        ["iq"] = {
+        ["i'"] = {
           query = "@quote.inner",
           desc = "Select inner content of quotes (single, double, backtick)"
         },
-        ["aq"] = {
+        ["a'"] = {
           query = "@quote.outer",
           desc = "Select entire quoted string (single, double, backtick)"
         },
@@ -88,7 +88,7 @@ configs.setup({
       set_jumps = true, -- whether to set jumps in the jumplist
       goto_next_start = {
         ["]f"] = "@function.outer",
-        ["]c"] = { query = "@class.outer", desc = "Next class start" },
+        -- ["]c"] = { query = "@class.outer", desc = "Next class start" },
         ["]b"] = "@brackets.outer",
         --
         -- You can use regex matching (i.e. lua pattern) and/or pass a list in a "query" key to group multiple queires.
@@ -99,21 +99,21 @@ configs.setup({
         -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
         -- ["]s"] = { query = "@scope", query_group = "locals", desc = "Next scope" },
         ["]z"] = { query = "@fold", query_group = "folds", desc = "Next fold" },
-        ["]q"] = { query = "@quote.outer", desc = "Next quote" },
+        ["]'"] = { query = "@quote.outer", desc = "Next quote" },
         ["]x"] = { query = "@comment.outer", desc = "Next comment" },
         ["]a"] = "@jsxa",
       },
       goto_next_end = {
         ["]F"] = "@function.outer",
         ["]B"] = "@brackets.outer",
-        ["]c"] = "@class.outer",
+        -- ["]c"] = "@class.outer",
         ["]A"] = "@jsxa",
       },
       goto_previous_start = {
         ["[f"] = "@function.outer",
         ["[b"] = "@brackets.outer",
         ["[["] = "@class.outer",
-        ["[q"] = { query = "@quote.outer", desc = "Previous quote" },
+        ["['"] = { query = "@quote.outer", desc = "Previous quote" },
         ["[x"] = { query = "@comment.outer", desc = "Previous comment" },
         ["[a"] = "@jsxa",
       },
@@ -165,6 +165,29 @@ if ts_repeat_move_status then
   vim.keymap.set({ "n", "x", "o" }, "F", ts_repeat_move.builtin_F_expr, { expr = true })
   vim.keymap.set({ "n", "x", "o" }, "t", ts_repeat_move.builtin_t_expr, { expr = true })
   vim.keymap.set({ "n", "x", "o" }, "T", ts_repeat_move.builtin_T_expr, { expr = true })
+
+  -- Add buffer navigation with repeatable move
+  local bnext, bprev = ts_repeat_move.make_repeatable_move_pair(
+    function() vim.cmd("bnext") end, 
+    function() vim.cmd("bprevious") end 
+  )
+  vim.keymap.set({ "n", "x", "o" }, "]t", bnext)
+  vim.keymap.set({ "n", "x", "o" }, "[t", bprev)
+
+  -- Add quicklist navigation with repeatable move
+  local cnext, cprev = ts_repeat_move.make_repeatable_move_pair(
+    function() vim.cmd("cnext") end, 
+    function() vim.cmd("cprevious") end 
+  )
+  vim.keymap.set({ "n", "x", "o" }, "]q", cnext)
+  vim.keymap.set({ "n", "x", "o" }, "[q", cprev)
+  -- Quicklist stack navigation
+  local colder, cnewer = ts_repeat_move.make_repeatable_move_pair(
+    function() vim.cmd("cnewer") end, 
+    function() vim.cmd("colder") end 
+  )
+  vim.keymap.set({ "n", "x", "o" }, "]Q", colder)
+  vim.keymap.set({ "n", "x", "o" }, "[Q", cnewer)
 else
   vim.api.nvim_err_writeln("[Error] " .. "cannot find nvim-treesitter.textobjects.repeatable_move")
 end
