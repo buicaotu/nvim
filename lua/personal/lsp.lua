@@ -2,42 +2,42 @@ local lspconfig = require('lspconfig')
 local lspformat = require('lsp-format')
 lspformat.setup({})
 
--- Global capabilities
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.textDocument.completion.completionItem.snippetSupport = true
-capabilities.textDocument.completion.completionItem.preselectSupport = true
-capabilities.textDocument.completion.completionItem.insertReplaceSupport = true
-capabilities.textDocument.completion.completionItem.labelDetailsSupport = true
-capabilities.textDocument.completion.completionItem.deprecatedSupport = true
-capabilities.textDocument.completion.completionItem.preselectSupport = true
-capabilities.textDocument.completion.completionItem.tagSupport = {
-  valueSet = { 1 }
-}
-capabilities.textDocument.completion.completionItem.commitCharactersSupport = true
+-- Add cmp_nvim_lsp capabilities settings to lspconfig
+-- This should be executed before you configure any language server
+local lspconfig_defaults = require('lspconfig').util.default_config
+lspconfig_defaults.capabilities = vim.tbl_deep_extend(
+  'force',
+  lspconfig_defaults.capabilities,
+  require('cmp_nvim_lsp').default_capabilities()
+)
 
--- Global on_attach function
-local on_attach = function(client, bufnr)
-  -- Keymaps
-  local opts = { noremap = true, silent = true, buffer = bufnr }
-  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-  vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-  vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-  vim.keymap.set('n', 'gl', vim.diagnostic.open_float, opts)
-  -- vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
-  -- vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
-  -- vim.keymap.set('n', '<leader>wl', function()
-  --   print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-  -- end, opts)
-  vim.keymap.set('n', '<leader>D', vim.lsp.buf.type_definition, opts)
-  vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, opts)
-  vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-  vim.keymap.set('n', '<leader>f', function()
-    vim.lsp.buf.format { async = true }
-  end, opts)
-end
+-- This is where you enable features that only work
+-- if there is a language server active in the file
+vim.api.nvim_create_autocmd('LspAttach', {
+  desc = 'LSP actions',
+  callback = function(event)
+    -- Keymaps
+    local opts = { noremap = true, silent = true, buffer = event.buf }
+    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+    vim.keymap.set('n', 'gl', vim.diagnostic.open_float, opts)
+    -- vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
+    -- vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
+    -- vim.keymap.set('n', '<leader>wl', function()
+    --   print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+    -- end, opts)
+    vim.keymap.set('n', '<leader>D', vim.lsp.buf.type_definition, opts)
+    vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+    vim.keymap.set('n', '<leader>f', function()
+      vim.lsp.buf.format { async = true }
+    end, opts)
+  end
+})
 
 -- Setup mason
 require('mason').setup({})
@@ -47,10 +47,7 @@ require("mason-lspconfig").setup({
 })
 
 lspconfig.eslint.setup({
-  capabilities = capabilities,
   on_attach = function(client, bufnr)
-    on_attach(client, bufnr)
-    client.server_capabilities.documentFormattingProvider = false
     vim.api.nvim_create_autocmd("BufWritePre", {
       buffer = bufnr,
       command = "EslintFixAll",
@@ -59,21 +56,17 @@ lspconfig.eslint.setup({
 })
 
 lspconfig.denols.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
   root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
   init_options = {
     enable = true,
     lint = true,
     unstable = false,
-    importMap = "./deno.json" 
+    importMap = "./deno.json"
   }
 })
 
 lspconfig.ts_ls.setup({
-  capabilities = capabilities,
-  on_attach = function(client, bufnr)
-    on_attach(client, bufnr)
+  on_attach = function(client)
     client.server_capabilities.documentFormattingProvider = false
   end,
   single_file_support = false,
@@ -111,9 +104,7 @@ end
 
 -- Set up efm-langserver
 lspconfig.efm.setup {
-  capabilities = capabilities,
-  on_attach = function(client, bufnr)
-    on_attach(client, bufnr)
+  on_attach = function(client)
     if client.server_capabilities.documentFormattingProvider then
       vim.api.nvim_command('autocmd BufWritePre <buffer> lua vim.lsp.buf.format()')
     end
@@ -139,8 +130,6 @@ lspconfig.efm.setup {
 }
 
 lspconfig.lua_ls.setup({
-  capabilities = capabilities,
-  on_attach = on_attach,
   settings = {
     Lua = {
       runtime = { version = 'LuaJIT' },
@@ -156,7 +145,7 @@ local ts_repeat_move_status, ts_repeat_move = pcall(require, "nvim-treesitter.te
 if ts_repeat_move_status then
   -- Register the diagnostic navigation functions with repeatable_move
   local next_diagnostic, prev_diagnostic = ts_repeat_move.make_repeatable_move_pair(
-    vim.diagnostic.goto_next, 
+    vim.diagnostic.goto_next,
     vim.diagnostic.goto_prev
   )
 
