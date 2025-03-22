@@ -1,4 +1,3 @@
-
 return {
   "ibhagwan/fzf-lua",
   dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -36,7 +35,8 @@ return {
 
     -- grep WORD under cursor
     vim.keymap.set("n", "<leader>R", function ()
-      require("fzf-lua").grep_cWORD()
+      local word = vim.fn.expand("<cword>")
+      vim.cmd("OilGrep " .. word)
     end, opts)
 
     -- grep visual selected

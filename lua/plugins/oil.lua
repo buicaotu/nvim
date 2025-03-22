@@ -16,20 +16,26 @@ return {
   },
   init = function()
     -- Define custom commands
-    vim.api.nvim_create_user_command("OilGrep", function()
+    vim.api.nvim_create_user_command("OilGrep", function(opts)
       local oil = require("oil");
       local dir = oil.get_current_dir() or vim.fn.expand("%:p:h")
-      oil.close()
+      if vim.bo.filetype == "oil" then
+        oil.close()
+      end
       require("fzf-lua").grep({
         cwd = dir,
         input_prompt = 'Grep in ' .. dir .. ' ❯ ',
+        search = opts.fargs[1],
       })
-    end, {})
+    end, { nargs = "?" })
 
+    -- open fzf files of the current directory
     vim.api.nvim_create_user_command("OilFiles", function()
       local oil = require("oil");
       local dir = oil.get_current_dir() or vim.fn.expand("%:p:h")
-      oil.close()
+      if vim.bo.filetype == "oil" then
+        oil.close()
+      end
       require("fzf-lua").files({
         cwd = dir,
       })
@@ -41,6 +47,8 @@ return {
     vim.keymap.set("n", "<C-n>", function()
       require("oil").toggle_float()
     end, opts)
+    -- OilFiles keymap
+    vim.keymap.set("n", "<leader>of", ":OilFiles<CR>", opts)
 
     -- Redefine 'Browse' as oil.nvim disable netrw
     vim.api.nvim_create_user_command(
