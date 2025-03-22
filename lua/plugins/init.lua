@@ -4,8 +4,6 @@ return {
   { 'williamboman/mason.nvim' },
   { 'williamboman/mason-lspconfig.nvim' },
   -- Autocompletion
-  { 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-nvim-lsp' },
   { "lukas-reineke/lsp-format.nvim" },
   { "github/copilot.vim" },
 

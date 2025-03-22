@@ -151,35 +151,3 @@ if ts_repeat_move_status then
   vim.keymap.set('n', ']d', next_diagnostic, { noremap = true, silent = true })
   vim.keymap.set('n', '[d', prev_diagnostic, { noremap = true, silent = true })
 end
-
-local cmp = require('cmp')
-cmp.setup({
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'nvim_lua' },
-  },
-  preselect = 'item',
-  completion = {
-    completeopt = 'menu,menuone,noinsert'
-  },
-  mapping = cmp.mapping.preset.insert({
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
-    ['<CR>'] = cmp.mapping.confirm({ select = false }),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-d>'] = cmp.mapping.scroll_docs(4),
-  })
-})
