@@ -20,10 +20,8 @@ require "personal.treesitter"
 require "personal.comment"
 require "personal.lsp"
 -- require "personal.neotest"
-require "personal.fzf"
 require "personal.workflow"
 require "personal.dap"
-require "personal.oil"
 require "personal.term"
 
 require("personal.dprint").setup()
