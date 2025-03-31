@@ -4,7 +4,7 @@ lspformat.setup({})
 
 -- Add cmp_nvim_lsp capabilities settings to lspconfig
 -- This should be executed before you configure any language server
-local lspconfig_defaults = require('lspconfig').util.default_config
+local lspconfig_defaults = lspconfig.util.default_config
 lspconfig_defaults.capabilities = vim.tbl_deep_extend(
   'force',
   lspconfig_defaults.capabilities,
@@ -60,7 +60,7 @@ lspconfig.denols.setup({
   init_options = {
     enable = true,
     lint = true,
-    unstable = false,
+    unstable = true,
     importMap = "./deno.json"
   }
 })
@@ -70,7 +70,13 @@ lspconfig.ts_ls.setup({
     client.server_capabilities.documentFormattingProvider = false
   end,
   single_file_support = false,
-  root_dir = lspconfig.util.root_pattern("package.json"),
+  root_dir = function(fname)
+    local deno_root = lspconfig.util.root_pattern("deno.json", "deno.jsonc")(fname)
+    if deno_root then
+      return nil -- Return nil to tell tsserver not to attach in Deno projects
+    end
+    return lspconfig.util.root_pattern("package.json", "tsconfig.json", "jsconfig.json")(fname)
+  end,
   init_options = {
     preferences = {
       includeInlayParameterNameHints = 'all',
