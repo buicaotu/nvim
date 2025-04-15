@@ -40,4 +40,8 @@ return {
     },
     bigfile = {},
   },
+  keys = {
+    { "<leader>bd", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
+    { "<c-/>",      function() Snacks.terminal() end, desc = "Toggle Terminal" },
+  }
 }

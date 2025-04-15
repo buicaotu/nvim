@@ -63,6 +63,7 @@ return {
   { 'echasnovski/mini.move', version = false, opts = {} },
 
   -- Misc
+  { "tpope/vim-surround" },
   { 'cohama/lexima.vim' },
   { 'nvim-lua/plenary.nvim' },
   { 'christoomey/vim-tmux-navigator' },
