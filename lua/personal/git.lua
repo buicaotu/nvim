@@ -110,6 +110,7 @@ vim.keymap.set("n", "<leader>Dt", function()
     vim.cmd('G! difftool --name-only ' .. commit)
   end
 end, opts)
+vim.keymap.set("n", "<leader>dG", ':DiffGreen<CR>', opts)
 
 -- diff against current working directory
 vim.keymap.set("n", "<leader>ds", vim.cmd.Gvdiffsplit, opts)
