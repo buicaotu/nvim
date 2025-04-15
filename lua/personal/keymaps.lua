@@ -31,11 +31,6 @@ vim.keymap.set("n", "<leader>s", vim.cmd.Files, opts)
 vim.keymap.set("n", "<C-p>", vim.cmd.Buffers, opts)
 vim.keymap.set("n", "<leader>p", vim.cmd.FzfLua, opts)
 
--- git-fugitive keymaps
-vim.keymap.set("n", "<leader>ds", vim.cmd.Gvdiffsplit, opts)
-vim.keymap.set("n", "<leader>dt", ':G difftool --name-only<CR>', opts)
-vim.keymap.set("n", "<leader>mt", ':G mergetool <CR>', opts)
-
 -- terminal
 -- https://neovim.io/doc/user/nvim_terminal_emulator.html
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', opts)
@@ -93,3 +88,6 @@ vim.keymap.set('n', '<M-Left>', ':vertical resize -5<CR>', opts)
 vim.keymap.set('n', '<M-Right>', ':vertical resize +5<CR>', opts)
 vim.keymap.set('n', '<M-Down>', ':resize -5<CR>', opts)
 vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
+
+-- common commands mispelled
+vim.api.nvim_create_user_command('Wa', ':wa', {})

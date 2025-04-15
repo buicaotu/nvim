@@ -97,9 +97,33 @@ end, { nargs = 1 })
 vim.api.nvim_create_user_command('DiffGreen', diff_branch_factory('green'), {})
 vim.api.nvim_create_user_command('DiffMaster', diff_branch_factory('master'), {})
 
+
+-- git-fugitive keymaps
+
+-- difftool against current working directory
+vim.keymap.set("n", "<leader>dt", ':G! difftool --name-only<CR>', opts)
+-- difftool against a specific commit and store the commit
+vim.keymap.set("n", "<leader>Dt", function()
+  local commit = vim.fn.input("Commit: ")
+  current_commit = commit
+  if commit ~= "" then
+    vim.cmd('G! difftool --name-only ' .. commit)
+  end
+end, opts)
+
+-- diff against current working directory
+vim.keymap.set("n", "<leader>ds", vim.cmd.Gvdiffsplit, opts)
+-- diff against a specific commit
+vim.keymap.set("n", "<leader>Ds", function()
+  local commit = vim.fn.input("Commit: ")
+  if commit ~= "" then
+    vim.cmd('Gvdiffsplit ' .. commit)
+  end
+end, opts)
+-- diff against the stored commit from (Dt)
 vim.keymap.set('n', '<leader>dg', function()
   vim.cmd('Gvdiffsplit ' .. current_commit .. ':%')
 end, opts)
 
-vim.api.nvim_create_user_command('Wa', ':wa', {})
+vim.keymap.set("n", "<leader>mt", ':G mergetool <CR>', opts)
  
