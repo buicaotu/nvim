@@ -71,5 +71,5 @@ vim.api.nvim_create_autocmd('termopen', {
 })
 
 -- Keymapping
-vim.keymap.set("n", "<leader>/", open_or_switch_term, { noremap = true, silent = true, nowait = true })
-vim.keymap.set("n", "<leader><leader>/", close_term_win, { noremap = true, silent = true, nowait = true })
+-- vim.keymap.set("n", "<leader>/", open_or_switch_term, { noremap = true, silent = true, nowait = true })
+-- vim.keymap.set("n", "<leader><leader>/", close_term_win, { noremap = true, silent = true, nowait = true })
