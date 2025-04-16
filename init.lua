@@ -11,6 +11,10 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Check if this is a work computer by checking hostname
+local hostname = vim.loop.os_gethostname()
+vim.g.work_env = hostname == "tuleworkmac.local"
+
 require "personal.keymaps"
 require "personal.options"
 

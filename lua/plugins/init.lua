@@ -40,6 +40,9 @@ return {
     url = "org-2562356@github.com:Canva/dprint-vim-plugin.git",
     event = "BufWritePre",
     lazy = true,
+    cond = function()
+      return vim.g.work_env == true
+    end,
   },
 
   -- Testing
