@@ -66,8 +66,8 @@ vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
 
 -- cmd keymaps
 vim.keymap.set('n', '<Char-0xAA>', '<cmd>write<cr>', opts)
--- vim.keymap.set('v', '<Char-0xAB>', 'y', opts)
 vim.keymap.set('v', '<Char-0xAB>', 'y<cmd>let @+=@0<CR>', opts)
+vim.keymap.set({ 'n', 'i' }, '<Char-0xAD>', ':norm "+p', opts)
 
 -- common commands mispelled
 vim.api.nvim_create_user_command('Wa', function(opts)
