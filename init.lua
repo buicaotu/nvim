@@ -23,7 +23,6 @@ require("lazy").setup("plugins")
 require "personal.treesitter"
 require "personal.comment"
 require "personal.lsp"
--- require "personal.neotest"
 require "personal.git"
 require "personal.dap"
 require "personal.term"

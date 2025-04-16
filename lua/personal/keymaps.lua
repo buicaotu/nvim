@@ -6,25 +6,11 @@ local keymap = vim.api.nvim_set_keymap
 -- leader key
 vim.g.mapleader = ' '
 
--- Move text up and down
-keymap("n", "<M-j>", "<Esc>:m .+1<CR>==", opts)
-keymap("n", "<M-k>", "<Esc>:m .-2<CR>==", opts)
-
--- Visual --
--- Stay in indent mode
-keymap("v", "<", "<gv", opts)
-keymap("v", ">", ">gv", opts)
-
 -- Replace without yank
 keymap("v", "p", '"_dP', opts)
 
--- Undo tree --
-vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle, opts)
-
 -- clipboard
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', opts)
-vim.keymap.set({ "n", "v" }, "<leader>p", '"+p', opts)
-vim.keymap.set({ "n", "v" }, "<leader>P", '"+P', opts)
 
 -- FZF keymaps
 vim.keymap.set("n", "<leader>s", vim.cmd.Files, opts)
@@ -62,17 +48,6 @@ vim.keymap.set('i', '<C-J>', 'copilot#Accept("\\<CR>")', {
 })
 vim.g.copilot_no_tab_map = true
 
--- Keymaps for both normal and visual modes
-vim.keymap.set({"n", "v"}, "<leader>co", function()
-  vim.cmd("CopilotChatToggle")
-end, { desc = "CopilotChat - Open chat", noremap = true, silent = true, nowait = true })
-
-vim.keymap.set({"n", "v"}, "<leader>cp", function()
-  local actions = require("CopilotChat.actions")
-  require("CopilotChat.integrations.fzflua").pick(actions.prompt_actions())
-end, { desc = "CopilotChat - Prompt actions", noremap = true, silent = true, nowait = true })
-
-
 vim.keymap.set({ "n", "v" }, "<leader>aa", function()
   require("avante.api").ask()
 end, opts)
@@ -89,5 +64,15 @@ vim.keymap.set('n', '<M-Right>', ':vertical resize +5<CR>', opts)
 vim.keymap.set('n', '<M-Down>', ':resize -5<CR>', opts)
 vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
 
+-- cmd keymaps
+vim.keymap.set('n', '<Char-0xAA>', '<cmd>write<cr>', opts)
+-- vim.keymap.set('v', '<Char-0xAB>', 'y', opts)
+vim.keymap.set('v', '<Char-0xAB>', 'y<cmd>let @+=@0<CR>', opts)
+
 -- common commands mispelled
-vim.api.nvim_create_user_command('Wa', ':wa', {})
+vim.api.nvim_create_user_command('Wa', function(opts)
+  vim.cmd('wa' .. (opts.args ~= '' and ' ' .. opts.args or ''))
+end, { nargs = '*' })
+vim.api.nvim_create_user_command('Qa', function(opts)
+  vim.cmd('qa' .. (opts.args ~= '' and ' ' .. opts.args or ''))
+end, { nargs = '*' })
