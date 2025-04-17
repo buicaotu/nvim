@@ -29,8 +29,8 @@ vim.keymap.set('t', '<c-r>', function()
   return '<C-\\><C-N>"' .. next_char .. 'pi'
 end, { expr = true })
 
--- Close current window or buffer if it's the last window
-vim.api.nvim_set_keymap('n', '<leader>q', ':lua if #vim.api.nvim_list_wins() == 1 then vim.cmd("bd") else vim.cmd("q") end<CR>', { noremap = true, silent = true })
+-- Close current window, do nothing if it's the last window
+vim.api.nvim_set_keymap('n', '<leader>q', ':lua if #vim.api.nvim_list_wins() > 1 then vim.cmd("q") end<CR>', { noremap = true, silent = true })
 
 -- buffer
 vim.keymap.set('n', '<leader>x', ':bn|bd#<CR>', opts)
@@ -85,3 +85,19 @@ end, { nargs = '*' })
 vim.api.nvim_create_user_command('Qa', function(opts)
   vim.cmd('qa' .. (opts.args ~= '' and ' ' .. opts.args or ''))
 end, { nargs = '*' })
+
+-- Toggle quickfix list and move cursor to it if opened
+vim.keymap.set('n', '<leader>Q', function()
+  local qf_exists = false
+  for _, win in pairs(vim.fn.getwininfo()) do
+    if win.quickfix == 1 then
+      qf_exists = true
+      break
+    end
+  end
+  if qf_exists == true then
+    vim.cmd('cclose')
+  else
+    vim.cmd('copen')
+  end
+end, opts)
