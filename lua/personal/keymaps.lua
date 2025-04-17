@@ -59,15 +59,24 @@ vim.keymap.set({ "n", "v" }, "<leader>ae", function()
 end, opts)
 
 -- Window resize
-vim.keymap.set('n', '<M-Left>', ':vertical resize -5<CR>', opts)
-vim.keymap.set('n', '<M-Right>', ':vertical resize +5<CR>', opts)
-vim.keymap.set('n', '<M-Down>', ':resize -5<CR>', opts)
-vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
+-- vim.keymap.set('n', '<M-Left>', ':vertical resize -5<CR>', opts)
+-- vim.keymap.set('n', '<M-Right>', ':vertical resize +5<CR>', opts)
+-- vim.keymap.set('n', '<M-Down>', ':resize -5<CR>', opts)
+-- vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
 
--- cmd keymaps
+-- The keymaps below are special characters sent to neovim from wezterm
+-- refer to .wezterm.lua for the keybindings
 vim.keymap.set('n', '<Char-0xAA>', '<cmd>write<cr>', opts)
 vim.keymap.set('v', '<Char-0xAB>', 'y<cmd>let @+=@0<CR>', opts)
 vim.keymap.set({ 'n', 'i' }, '<Char-0xAD>', ':norm "+p', opts)
+
+-- Option+Arrow key mappings in normal mode/insert/terminal mode
+vim.keymap.set('n', '<Char-0xB0>', 'b', opts)
+vim.keymap.set('i', '<Char-0xB0>', '<C-o>b', opts)
+vim.keymap.set('t', '<Char-0xB0>', '<Esc>b', opts)
+vim.keymap.set('n', '<Char-0xB1>', 'w', opts)
+vim.keymap.set('i', '<Char-0xB1>', '<C-o>w', opts)
+vim.keymap.set('t', '<Char-0xB1>', '<Esc>f', opts)
 
 -- common commands mispelled
 vim.api.nvim_create_user_command('Wa', function(opts)
