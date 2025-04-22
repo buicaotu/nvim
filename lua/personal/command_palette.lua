@@ -47,6 +47,28 @@ M.commands = {
       end
     end
   },
+  {
+    description = "buffer: force close all buffers",
+    action = function()
+      -- Prompt to confirm before proceeding
+      local choice = vim.fn.confirm("Close all buffers without saving?", "&Yes\n&No", 2)
+      
+      if choice ~= 1 then
+        return -- User cancelled the operation
+      end
+      
+      -- Get all buffer numbers
+      local buffers = vim.api.nvim_list_bufs()
+      
+      -- Force close all buffers
+      for _, buf in ipairs(buffers) do
+        pcall(vim.api.nvim_buf_delete, buf, { force = true })
+      end
+      
+      -- Create a new empty buffer to keep Neovim open
+      vim.cmd("enew")
+    end
+  },
 }
 
 -- Store command history
