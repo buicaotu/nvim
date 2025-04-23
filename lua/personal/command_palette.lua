@@ -73,18 +73,44 @@ M.commands = {
 
 -- Store command history
 M.command_history = {}
+-- Track grep commands in command_history
+local grep_count = 0
 
 -- Function to add a command to history
 local function add_to_history(command)
+  local is_grep = command.description:match("^grep:")
+  
   -- Remove if already in history
   for i, cmd in ipairs(M.command_history) do
     if cmd.description == command.description then
+      -- If this is a grep command, reduce the count
+      if is_grep then
+        grep_count = grep_count - 1
+      end
       table.remove(M.command_history, i)
       break
     end
   end
+  
   -- Add to the beginning of history
   table.insert(M.command_history, 1, command)
+  
+  -- Increase grep count if this is a grep command
+  if is_grep then
+    grep_count = grep_count + 1
+    
+    -- Limit to 5 grep commands
+    if grep_count > 5 then
+      -- Find the oldest grep command and remove it
+      for i = #M.command_history, 1, -1 do
+        if M.command_history[i].description:match("^grep:") then
+          table.remove(M.command_history, i)
+          grep_count = grep_count - 1
+          break
+        end
+      end
+    end
+  end
 end
 
 -- Function to execute a command
@@ -152,6 +178,84 @@ function M.register_command(description, action)
     description = description,
     action = action
   })
+end
+
+-- Function to perform grep and register it in command palette
+function M.grep(dir, search)
+  -- Create a descriptive name for the command
+  local shortdir = dir:match("([^/]+)$") or dir
+  local description
+  if search == nil then
+    description = string.format("grep: %s", shortdir)
+  else
+    description = string.format("grep: '%s' in %s", search, shortdir)
+  end
+  
+  -- Check if this exact grep command already exists
+  for i, cmd in ipairs(M.command_history) do
+    if cmd.description == description then
+      -- Execute the existing command and bump it to the top of history
+      execute_command(cmd)
+      return
+    end
+  end
+  
+  -- Create the action function
+  local action = function()
+    require("fzf-lua").grep({
+      cwd = dir,
+      input_prompt = 'Grep in ' .. dir .. ' ❯ ',
+      search = search,
+    })
+  end
+  
+  -- Create the command object
+  local command = {
+    description = description,
+    action = action
+  }
+  
+  -- Add to history
+  add_to_history(command)
+  
+  -- Execute the action
+  action()
+end
+
+-- Function to browse files and register it in command palette
+function M.files(dir)
+  -- Create a descriptive name for the command
+  local shortdir = dir:match("([^/]+)$") or dir
+  local description = string.format("files: browse %s", shortdir)
+  
+  -- Check if this exact files command already exists
+  for i, cmd in ipairs(M.command_history) do
+    if cmd.description == description then
+      -- Execute the existing command and bump it to the top of history
+      execute_command(cmd)
+      return
+    end
+  end
+  
+  -- Create the action function
+  local action = function()
+    require("fzf-lua").files({
+      cwd = dir,
+      prompt = 'Files in ' .. dir .. ' ❯ ',
+    })
+  end
+  
+  -- Create the command object
+  local command = {
+    description = description,
+    action = action
+  }
+  
+  -- Add to history
+  add_to_history(command)
+  
+  -- Execute the action
+  action()
 end
 
 -- Setup function (no longer sets keymap)

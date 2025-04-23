@@ -22,11 +22,7 @@ return {
       if vim.bo.filetype == "oil" then
         oil.close()
       end
-      require("fzf-lua").grep({
-        cwd = dir,
-        input_prompt = 'Grep in ' .. dir .. ' ❯ ',
-        search = opts.fargs[1],
-      })
+      require("personal.command_palette").grep(dir, opts.fargs[1])
     end, { nargs = "?" })
 
     -- open fzf files of the current directory
@@ -36,9 +32,7 @@ return {
       if vim.bo.filetype == "oil" then
         oil.close()
       end
-      require("fzf-lua").files({
-        cwd = dir,
-      })
+      require("personal.command_palette").files(dir)
     end, {})
 
 
