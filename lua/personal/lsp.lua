@@ -9,7 +9,7 @@ local virtual_configs = {
 }
 local virtual_configs_lines = {
   virtual_text = { current_line = true, severity = { min = "INFO", max = "WARN" } },
-  virtual_lines = { current_line = true, severity = { min = "ERROR" } }
+  virtual_lines = { current_line = false, severity = { min = "ERROR" } }
 }
 vim.diagnostic.config({
   signs = { priority = 9999 },
