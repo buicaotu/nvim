@@ -41,3 +41,5 @@ luac.out
 
 .DS_Store
 .luarc.json
+
+session.vim
