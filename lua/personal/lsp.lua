@@ -3,12 +3,20 @@ local lspformat = require('lsp-format')
 lspformat.setup({})
 
 -- Diagnostics
+local virtual_configs = {
+  virtual_text = { current_line = true, severity = { min = "INFO" } },
+  virtual_lines = false
+}
+local virtual_configs_lines = {
+  virtual_text = { current_line = true, severity = { min = "INFO", max = "WARN" } },
+  virtual_lines = { current_line = true, severity = { min = "ERROR" } }
+}
 vim.diagnostic.config({
   signs = { priority = 9999 },
   underline = true,
   update_in_insert = false, -- false so diags are updated on InsertLeave
-  virtual_text = { current_line = true, severity = { min = "INFO", max = "WARN" } },
-  virtual_lines = { current_line = true, severity = { min = "ERROR" } },
+  virtual_text = virtual_configs.virtual_text,
+  virtual_lines = virtual_configs.virtual_lines,
   severity_sort = true,
   float = {
     focusable = false,
@@ -42,6 +50,15 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
     vim.keymap.set('n', 'gk', vim.lsp.buf.signature_help, opts)
     vim.keymap.set('n', 'gl', vim.diagnostic.open_float, opts)
+    vim.keymap.set('n', 'gL', function()
+      -- toggle virtual lines
+      local has_virtual_lines = vim.diagnostic.config().virtual_lines ~= false
+      if (has_virtual_lines) then
+        vim.diagnostic.config(virtual_configs)
+      else
+        vim.diagnostic.config(virtual_configs_lines)
+      end
+    end, opts)
     -- vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
     -- vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
     -- vim.keymap.set('n', '<leader>wl', function()
@@ -168,8 +185,13 @@ local ts_repeat_move_status, ts_repeat_move = pcall(require, "nvim-treesitter.te
 if ts_repeat_move_status then
   -- Register the diagnostic navigation functions with repeatable_move
   local next_diagnostic, prev_diagnostic = ts_repeat_move.make_repeatable_move_pair(
-    vim.diagnostic.goto_next,
-    vim.diagnostic.goto_prev
+    -- maybe set severity to min = WARN.
+    function()
+      vim.diagnostic.jump({ count = 1, float = false })
+    end,
+    function()
+      vim.diagnostic.jump({ count = -1, float = false })
+    end
   )
 
   -- Map the diagnostic navigation to use repeatable_move
