@@ -7,17 +7,22 @@ function M.setup()
   
   -- Session management commands
   core.register_command("workflow: save session", function()
-    vim.cmd("mksession! " .. vim.fn.stdpath("config") .. "/session.vim")
-    vim.notify("Session saved", vim.log.levels.INFO)
+    local cwd = vim.fn.getcwd()
+    local session_file = cwd .. "/.session.vim"
+    
+    vim.cmd("mksession! " .. session_file)
+    vim.notify("Session saved in project directory", vim.log.levels.INFO)
   end)
   
   core.register_command("workflow: load session", function()
-    local session_file = vim.fn.stdpath("config") .. "/session.vim"
+    local cwd = vim.fn.getcwd()
+    local session_file = cwd .. "/.session.vim"
+    
     if vim.fn.filereadable(session_file) == 1 then
       vim.cmd("source " .. session_file)
-      vim.notify("Session loaded", vim.log.levels.INFO)
+      vim.notify("Session loaded from project directory", vim.log.levels.INFO)
     else
-      vim.notify("No session file found", vim.log.levels.WARN)
+      vim.notify("No session file found in project directory", vim.log.levels.WARN)
     end
   end)
   
