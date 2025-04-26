@@ -12,11 +12,6 @@ keymap("v", "p", '"_dP', opts)
 -- clipboard
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', opts)
 
--- FZF keymaps
-vim.keymap.set("n", "<leader>s", vim.cmd.Files, opts)
-vim.keymap.set("n", "<C-p>", vim.cmd.Buffers, opts)
-vim.keymap.set("n", "<leader>p", vim.cmd.FzfLua, opts)
-
 -- terminal
 -- https://neovim.io/doc/user/nvim_terminal_emulator.html
 vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', opts)

@@ -2,7 +2,7 @@ return {
   "ibhagwan/fzf-lua",
   dependencies = { "nvim-tree/nvim-web-devicons" },
   opts = {
-    "fzf-vim",
+    "hide",
     winopts = {
       preview = { hidden = "nohidden" },
     },
@@ -20,6 +20,11 @@ return {
     },
     previewers = {
       syntax_limit_b = 1024 * 100, -- 100KB
+    },
+    grep = {
+      rg_glob = true,
+      glob_flag = "--iglob", -- for case sensitive globs use '--glob'
+      glob_separator = "%s%-%-" -- query separator pattern (lua): ' --'
     }
   },
   init = function()
@@ -30,20 +35,38 @@ return {
     local opts = { noremap = true, silent = true, nowait = true }
     -- grep word under cursor
     vim.keymap.set("n", "<leader>r", function ()
-      require("fzf-lua").grep_cword()
+      vim.cmd.Rg(vim.fn.expand("<cword>"))
     end, opts)
 
-    -- grep WORD under cursor
+    -- grep word under cursor in current directory
     vim.keymap.set("n", "<leader>R", function ()
-      local word = vim.fn.expand("<cword>")
-      vim.cmd("OilGrep " .. word)
+      vim.cmd.OilGrep(vim.fn.expand("<cword>"))
     end, opts)
 
     -- grep visual selected
     vim.keymap.set("v", "<leader>r", function ()
-      require("fzf-lua").grep_visual()
+      local selected_text = require("fzf-lua.utils").get_visual_selection()
+      vim.cmd.Rg(selected_text)
     end, opts)
 
+    -- FZF keymaps
+    vim.keymap.set("n", "<leader>s", function() 
+      vim.cmd.FzfLua('files')
+    end, opts)
+    vim.keymap.set("n", "<C-p>", function() 
+      vim.cmd.FzfLua('buffers')
+    end, opts)
+    vim.keymap.set("n", "<leader>p", vim.cmd.FzfLua, opts)
+
     -- todo: grep selected word/word under cursor within current folder
+    
+    -- Setup FZF Vim commands
+    -- require("fzf-lua").setup_fzfvim_cmds()
+    
+    -- Create :Rg command for searching
+    vim.api.nvim_create_user_command("Rg", function(opts)
+      local search_text = table.concat(opts.fargs, " ")
+      require("personal.command_palette").grep(vim.fn.getcwd(), search_text)
+    end, { nargs = "*" })
   end
 }
