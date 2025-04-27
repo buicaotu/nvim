@@ -42,6 +42,6 @@ return {
   },
   keys = {
     { "<leader>bd", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
-    { "<leader>/",  function() Snacks.terminal.toggle(nil, { interactive = false  }) end, desc = "Toggle Terminal" },
+    { "<leader>/",  function() Snacks.terminal.toggle(nil, { start_insert = true, auto_insert = false  }) end, desc = "Toggle Terminal" },
   }
 }

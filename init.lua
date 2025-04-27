@@ -25,6 +25,5 @@ require "personal.comment"
 require "personal.lsp"
 require "personal.git"
 require "personal.dap"
-require "personal.term"
 
 require("personal.dprint").setup()
