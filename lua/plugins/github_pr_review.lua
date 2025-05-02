@@ -185,7 +185,36 @@ return {
       -- Add function to submit the comment
       vim.keymap.set("n", "<leader>s", function()
         local comment = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
-        if comment:gsub("%s+", "") == "" then
+        -- Apply comment filtering rules
+        local final_comment = ""
+        local lines = {}
+        for line in comment:gmatch("[^\r\n]+") do
+          table.insert(lines, line)
+        end
+        
+        -- Skip first 2 lines if they start with #
+        local start_index = 1
+        if #lines >= 1 and lines[1]:match("^%s*#") then
+          start_index = 2
+          if #lines >= 2 and lines[2]:match("^%s*#") then
+            start_index = 3
+          end
+        end
+        
+        -- Skip empty lines until we hit a non-empty line
+        local content_started = false
+        for i = start_index, #lines do
+          local line = lines[i]
+          if not content_started and line:gsub("%s+", "") ~= "" then
+            content_started = true
+          end
+          
+          if content_started then
+            final_comment = final_comment .. line .. "\n"
+          end
+        end
+        
+        if final_comment:gsub("%s+", "") == "" then
           vim.notify("Comment is empty", vim.log.levels.WARN)
           return
         end
@@ -193,7 +222,7 @@ return {
         -- Save comment to a temporary file
         local temp_file = vim.fn.tempname()
         local file = io.open(temp_file, "w")
-        file:write(comment)
+        file:write(final_comment)
         file:close()
         
         -- Submit the comment using gh cli
@@ -232,7 +261,36 @@ return {
       -- Add function to submit the comment
       vim.keymap.set("n", "<leader>s", function()
         local comment = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
-        if comment:gsub("%s+", "") == "" then
+        -- Apply comment filtering rules
+        local final_comment = ""
+        local lines = {}
+        for line in comment:gmatch("[^\r\n]+") do
+          table.insert(lines, line)
+        end
+        
+        -- Skip first 2 lines if they start with #
+        local start_index = 1
+        if #lines >= 1 and lines[1]:match("^%s*#") then
+          start_index = 2
+          if #lines >= 2 and lines[2]:match("^%s*#") then
+            start_index = 3
+          end
+        end
+        
+        -- Skip empty lines until we hit a non-empty line
+        local content_started = false
+        for i = start_index, #lines do
+          local line = lines[i]
+          if not content_started and line:gsub("%s+", "") ~= "" then
+            content_started = true
+          end
+          
+          if content_started then
+            final_comment = final_comment .. line .. "\n"
+          end
+        end
+        
+        if final_comment:gsub("%s+", "") == "" then
           vim.notify("Comment is empty", vim.log.levels.WARN)
           return
         end
@@ -240,7 +298,7 @@ return {
         -- Save comment to a temporary file
         local temp_file = vim.fn.tempname()
         local file = io.open(temp_file, "w")
-        file:write(comment)
+        file:write(final_comment)
         file:close()
         
         -- Submit the comment using gh cli
@@ -308,11 +366,44 @@ return {
         -- Add function to submit the review
         vim.keymap.set("n", "<leader>s", function()
           local comment = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
+          -- Apply comment filtering rules
+          local final_comment = ""
+          local lines = {}
+          for line in comment:gmatch("[^\r\n]+") do
+            table.insert(lines, line)
+          end
+          
+          -- Skip first 2 lines if they start with #
+          local start_index = 1
+          if #lines >= 1 and lines[1]:match("^%s*#") then
+            start_index = 2
+            if #lines >= 2 and lines[2]:match("^%s*#") then
+              start_index = 3
+            end
+          end
+          
+          -- Skip empty lines until we hit a non-empty line
+          local content_started = false
+          for i = start_index, #lines do
+            local line = lines[i]
+            if not content_started and line:gsub("%s+", "") ~= "" then
+              content_started = true
+            end
+            
+            if content_started then
+              final_comment = final_comment .. line .. "\n"
+            end
+          end
+          
+          if final_comment:gsub("%s+", "") == "" then
+            vim.notify("Comment is empty", vim.log.levels.WARN)
+            return
+          end
           
           -- Save comment to a temporary file
           local temp_file = vim.fn.tempname()
           local file = io.open(temp_file, "w")
-          file:write(comment)
+          file:write(final_comment)
           file:close()
           
           -- Submit the review using gh cli
