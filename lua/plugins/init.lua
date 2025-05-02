@@ -61,6 +61,13 @@ return {
   { "tpope/vim-rhubarb" },
   { "tpope/vim-dispatch" },
 
+  { 
+    'pwntester/octo.nvim', 
+    opts = {
+      picker = "fzf-lua",
+    } 
+  },
+
   -- UI
   { 'j-hui/fidget.nvim', opts = {} },
   { 'echasnovski/mini.move', version = false, opts = {} },
