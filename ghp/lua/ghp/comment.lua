@@ -1,5 +1,6 @@
 local M = {}
 local logger = require("ghp.logger")
+local comment_utils = require("ghp.comment_utils")
 
 -- Create a new PR comment
 function M.create_comment()
@@ -14,83 +15,8 @@ function M.create_comment()
   
   logger.info("Creating new PR comment for PR #" .. review.cache.pr_number)
   
-  -- Create a new buffer for the comment
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(bufnr, "buftype", "acwrite")
-  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(bufnr, "swapfile", false)
-  vim.api.nvim_buf_set_name(bufnr, "PR-Comment-" .. review.cache.pr_number)
-  
-  -- Set initial content with instructions
-  local lines = {
-    "# Write your PR comment below",
-    "# Lines starting with # will be ignored",
-    "# Press <leader>s to submit the comment",
-    "# Press q to cancel",
-    "",
-    "<!-- Write your comment below -->",
-    "",
-  }
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
-  
-  -- Create a window for the buffer
-  local width = math.floor(vim.api.nvim_get_option("columns") * 0.8)
-  local height = math.floor(vim.api.nvim_get_option("lines") * 0.6)
-  local row = math.floor((vim.api.nvim_get_option("lines") - height) / 2)
-  local col = math.floor((vim.api.nvim_get_option("columns") - width) / 2)
-  
-  local opts = {
-    relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-    title = "PR Comment - #" .. review.cache.pr_number,
-    title_pos = "center",
-  }
-  
-  local winnr = vim.api.nvim_open_win(bufnr, true, opts)
-  
-  -- Set filetype for better highlighting
-  vim.api.nvim_buf_set_option(bufnr, "filetype", "markdown")
-  
   -- Function to submit the comment
-  local function submit_comment()
-    -- Get buffer content
-    local content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-    local comment_text = {}
-    local found_placeholder = false
-    
-    -- Go through the lines from top down and look for the placeholder
-    for _, line in ipairs(content) do
-      if found_placeholder then
-        -- Add all lines below the placeholder
-        table.insert(comment_text, line)
-      elseif line == "<!-- Write your comment below -->" then
-        found_placeholder = true
-      end
-    end
-    
-    -- Remove empty lines from the end
-    while #comment_text > 0 and comment_text[#comment_text]:match("^%s*$") do
-      table.remove(comment_text, #comment_text)
-    end
-    
-    -- Check if comment is empty
-    if #comment_text == 0 then
-      vim.notify("Comment is empty. Not submitting.", vim.log.levels.WARN)
-      logger.warn("Comment submission canceled: empty comment")
-      return
-    end
-    
-    -- Join lines with newlines
-    local comment_body = table.concat(comment_text, "\n")
-    
-    -- Close the window and buffer
-    vim.api.nvim_win_close(winnr, true)
-    
+  local function handle_submit(comment_body)
     -- Submit the comment using GitHub CLI
     vim.notify("Submitting comment to PR #" .. review.cache.pr_number .. "...", vim.log.levels.INFO)
     logger.info("Attempting to submit comment to PR #" .. review.cache.pr_number)
@@ -159,23 +85,11 @@ function M.create_comment()
     end
   end
   
-  -- Set keymaps for the buffer
-  vim.api.nvim_buf_set_keymap(bufnr, "n", "<leader>s", "", {
-    noremap = true,
-    silent = true,
-    callback = submit_comment
+  -- Create comment window
+  comment_utils.create_comment_window({
+    title = "PR Comment - #" .. review.cache.pr_number,
+    on_submit = handle_submit
   })
-  
-  vim.api.nvim_buf_set_keymap(bufnr, "n", "q", "<cmd>close<CR>", {
-    noremap = true,
-    silent = true
-  })
-  
-  -- Set cursor at the start of the empty line below the instruction
-  vim.api.nvim_win_set_cursor(winnr, {7, 0})
-  
-  -- Enter insert mode
-  vim.cmd("startinsert")
 end
 
 -- Function to get a path relative to the git repository root
@@ -256,98 +170,13 @@ function M.comment_line(start_line, end_line)
   local commit_hash = review.cache.commit_hash
   logger.debug("Commit hash for PR: " .. commit_hash)
   
-  -- Create a new buffer for the comment
-  local comment_bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(comment_bufnr, "buftype", "acwrite")
-  vim.api.nvim_buf_set_option(comment_bufnr, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(comment_bufnr, "swapfile", false)
-  
-  local title = string.format("PR Line Comment - %s:%d-%d", repo_path, start_line, end_line)
-  vim.api.nvim_buf_set_name(comment_bufnr, title)
-  
   -- Get the lines being commented on for reference
   local commented_lines = vim.api.nvim_buf_get_lines(bufnr, start_line - 1, end_line, false)
   
-  -- Set initial content with instructions and the lines being commented on
-  local lines = {
-    "# Write your line comment below",
-    "# Lines starting with # will be ignored",
-    "# Press <leader>s to submit the comment",
-    "# Press q to cancel",
-    "",
-    "<!-- The lines you're commenting on: -->",
-  }
-  
-  -- Add the code being commented on (prefixed with "> ")
-  for _, line in ipairs(commented_lines) do
-    table.insert(lines, "> " .. line)
-  end
-  
-  -- Add a separator and placeholder
-  table.insert(lines, "")
-  table.insert(lines, "<!-- Write your comment below -->")
-  table.insert(lines, "")
-  
-  vim.api.nvim_buf_set_lines(comment_bufnr, 0, -1, false, lines)
-  
-  -- Create a window for the buffer
-  local width = math.floor(vim.api.nvim_get_option("columns") * 0.8)
-  local height = math.floor(vim.api.nvim_get_option("lines") * 0.6)
-  local row = math.floor((vim.api.nvim_get_option("lines") - height) / 2)
-  local col = math.floor((vim.api.nvim_get_option("columns") - width) / 2)
-  
-  local opts = {
-    relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-    title = title,
-    title_pos = "center",
-  }
-  
-  local winnr = vim.api.nvim_open_win(comment_bufnr, true, opts)
-  
-  -- Set filetype for better highlighting
-  vim.api.nvim_buf_set_option(comment_bufnr, "filetype", "markdown")
+  local title = string.format("PR Line Comment - %s:%d-%d", repo_path, start_line, end_line)
   
   -- Function to submit the line comment
-  local function submit_line_comment()
-    -- Get buffer content
-    local content = vim.api.nvim_buf_get_lines(comment_bufnr, 0, -1, false)
-    local comment_text = {}
-    local found_placeholder = false
-    
-    -- Go through the lines from top down and look for the placeholder
-    for _, line in ipairs(content) do
-      if found_placeholder then
-        -- Add all lines below the placeholder
-        table.insert(comment_text, line)
-      elseif line == "<!-- Write your comment below -->" then
-        found_placeholder = true
-      end
-    end
-    
-    -- Remove empty lines from the end
-    while #comment_text > 0 and comment_text[#comment_text]:match("^%s*$") do
-      table.remove(comment_text, #comment_text)
-    end
-    
-    -- Check if comment is empty
-    if #comment_text == 0 then
-      vim.notify("Comment is empty. Not submitting.", vim.log.levels.WARN)
-      logger.warn("Line comment submission canceled: empty comment")
-      return
-    end
-    
-    -- Join lines with newlines
-    local comment_body = table.concat(comment_text, "\n")
-    
-    -- Close the window and buffer
-    vim.api.nvim_win_close(winnr, true)
-    
+  local function handle_submit(comment_body)
     -- Submit the comment using GitHub API through gh CLI
     vim.notify("Submitting line comment to PR #" .. review.cache.pr_number .. "...", vim.log.levels.INFO)
     logger.info(string.format("Attempting to submit line comment for PR #%s on %s:%d-%d", 
@@ -472,24 +301,12 @@ function M.comment_line(start_line, end_line)
     end
   end
   
-  -- Set keymaps for the buffer
-  vim.api.nvim_buf_set_keymap(comment_bufnr, "n", "<leader>s", "", {
-    noremap = true,
-    silent = true,
-    callback = submit_line_comment
+  -- Create comment window
+  comment_utils.create_comment_window({
+    title = title,
+    commented_lines = commented_lines,
+    on_submit = handle_submit
   })
-  
-  vim.api.nvim_buf_set_keymap(comment_bufnr, "n", "q", "<cmd>close<CR>", {
-    noremap = true,
-    silent = true
-  })
-  
-  -- Set cursor at the start of the empty line below the instruction
-  local placeholder_line = #lines
-  vim.api.nvim_win_set_cursor(winnr, {placeholder_line, 0})
-  
-  -- Enter insert mode
-  vim.cmd("startinsert")
 end
 
 -- Create a comment on the current line (normal mode) or selected lines (visual mode)
