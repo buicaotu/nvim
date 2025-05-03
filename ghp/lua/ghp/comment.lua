@@ -353,45 +353,15 @@ function M.comment_line(start_line, end_line)
     logger.info(string.format("Attempting to submit line comment for PR #%s on %s:%d-%d", 
       review.cache.pr_number, repo_path, start_line, end_line))
     
-    -- Get owner and repo from remote URL
-    local get_remote_cmd = "git remote get-url origin"
-    logger.debug("Executing command: " .. get_remote_cmd)
-    local remote_handle = io.popen(get_remote_cmd .. " 2>/dev/null")
-    if not remote_handle then
-      local error_msg = "Failed to get remote URL"
-      vim.notify(error_msg, vim.log.levels.ERROR)
-      logger.error(error_msg)
-      return
-    end
+    -- Get owner and repo from cache
+    local owner = review.cache.owner
+    local repo = review.cache.repo
     
-    local remote_url = remote_handle:read("*a"):gsub("\n", "")
-    remote_handle:close()
-    logger.debug("Remote URL: " .. remote_url)
-    
-    -- Extract owner and repo from remote URL
-    local owner, repo
-    if remote_url:match("github.com") then
-      -- HTTPS format: https://github.com/owner/repo.git
-      -- SSH format: git@github.com:owner/repo.git
-      if remote_url:match("^https://") then
-        owner, repo = remote_url:match("github.com/([^/]+)/([^/%.]+)")
-        logger.debug("Extracted from HTTPS: owner=" .. (owner or "nil") .. ", repo=" .. (repo or "nil"))
-      else
-        owner, repo = remote_url:match("github.com:([^/]+)/([^/%.]+)")
-        logger.debug("Extracted from SSH: owner=" .. (owner or "nil") .. ", repo=" .. (repo or "nil"))
-      end
-      
-      if repo then
-        -- Remove .git suffix if present
-        repo = repo:gsub("%.git$", "")
-      end
-    end
-    
+    -- If owner and repo are not in the cache, log an error
     if not owner or not repo then
-      local error_msg = "Failed to parse owner and repo from git remote"
+      local error_msg = "Repository owner or name not found in cache"
       vim.notify(error_msg, vim.log.levels.ERROR)
       logger.error(error_msg)
-      logger.debug("Could not extract owner/repo from: " .. remote_url)
       return
     end
     

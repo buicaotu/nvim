@@ -11,6 +11,10 @@ M.cache = {
   base_commit_hash = nil, -- Hash of the common ancestor commit
   url = nil,
   
+  -- Repository info
+  owner = nil,
+  repo = nil,
+  
   -- Quickfix data
   title = nil,
   entries = nil,
@@ -163,6 +167,47 @@ local function create_qf_entries(files)
   return entries
 end
 
+-- Extract owner and repo from remote URL
+local function extract_repo_info()
+  local get_remote_cmd = "git remote get-url origin"
+  local remote_handle = io.popen(get_remote_cmd .. " 2>/dev/null")
+  if not remote_handle then
+    vim.notify("Failed to get remote URL", vim.log.levels.ERROR)
+    return nil, nil
+  end
+  
+  local remote_url = remote_handle:read("*a"):gsub("\n", "")
+  remote_handle:close()
+  vim.notify("Remote URL: " .. remote_url, vim.log.levels.DEBUG)
+  
+  -- Extract owner and repo from remote URL
+  local owner, repo
+  if remote_url:match("github.com") then
+    -- HTTPS format: https://github.com/owner/repo.git
+    -- SSH format: git@github.com:owner/repo.git
+    if remote_url:match("^https://") then
+      owner, repo = remote_url:match("github.com/([^/]+)/([^/%.]+)")
+      vim.notify("Extracted from HTTPS: owner=" .. (owner or "nil") .. ", repo=" .. (repo or "nil"), vim.log.levels.DEBUG)
+    else
+      owner, repo = remote_url:match("github.com:([^/]+)/([^/%.]+)")
+      vim.notify("Extracted from SSH: owner=" .. (owner or "nil") .. ", repo=" .. (repo or "nil"), vim.log.levels.DEBUG)
+    end
+    
+    if repo then
+      -- Remove .git suffix if present
+      repo = repo:gsub("%.git$", "")
+    end
+  end
+  
+  if not owner or not repo then
+    vim.notify("Failed to parse owner and repo from git remote", vim.log.levels.ERROR)
+    vim.notify("Could not extract owner/repo from: " .. remote_url, vim.log.levels.DEBUG)
+    return nil, nil
+  end
+  
+  return owner, repo
+end
+
 -- Set quickfix list with PR information
 local function set_quickfix(pr_data, entries)
   local title = string.format("PR: %s", pr_data.title)
@@ -174,7 +219,9 @@ local function set_quickfix(pr_data, entries)
     branch = pr_data.headRefName,
     base_branch = pr_data.baseRefName,
     base_commit_hash = pr_data.baseCommitHash,
-    url = pr_data.url
+    url = pr_data.url,
+    owner = pr_data.owner,
+    repo = pr_data.repo
   }
   
   vim.fn.setqflist({}, ' ', {
@@ -191,6 +238,8 @@ local function set_quickfix(pr_data, entries)
   M.cache.base_branch = pr_data.baseRefName
   M.cache.base_commit_hash = pr_data.baseCommitHash
   M.cache.url = pr_data.url
+  M.cache.owner = pr_data.owner
+  M.cache.repo = pr_data.repo
   M.cache.title = title
   M.cache.entries = entries
   M.cache.created_at = os.time()
@@ -211,6 +260,11 @@ function M.review()
   local base_commit_hash = get_base_commit_hash(pr_data)
   -- Attach it to the pr_data for convenience
   pr_data.baseCommitHash = base_commit_hash
+  
+  -- Extract and store repository owner and name
+  local owner, repo = extract_repo_info()
+  pr_data.owner = owner
+  pr_data.repo = repo
   
   local files = get_changed_files(pr_data)
   if vim.tbl_isempty(files) then
@@ -276,6 +330,7 @@ function M.show_info()
   local lines = {
     "PR #" .. M.cache.pr_number .. ": " .. M.cache.pr_title,
     "",
+    "Repository: " .. (M.cache.owner or "Unknown") .. "/" .. (M.cache.repo or "Unknown"),
     "Branch: " .. M.cache.branch,
     "Target: " .. M.cache.base_branch,
     "Head Commit: " .. M.cache.commit_hash:sub(1, 10),
@@ -369,5 +424,8 @@ function M.show_info()
   -- Return window number in case needed
   return winnr
 end
+
+-- Export the function as part of the module
+M.extract_repo_info = extract_repo_info
 
 return M 
