@@ -1,0 +1,373 @@
+local M = {}
+
+-- Simplified cache structure for a single PR review
+M.cache = {
+  -- Will be nil if not reviewing a PR
+  pr_number = nil,
+  pr_title = nil,
+  commit_hash = nil,
+  branch = nil,
+  base_branch = nil,
+  base_commit_hash = nil, -- Hash of the common ancestor commit
+  url = nil,
+  
+  -- Quickfix data
+  title = nil,
+  entries = nil,
+  
+  -- PR comments data
+  comments = nil,
+  
+  -- Timestamp
+  created_at = nil
+}
+
+-- Get the current branch name
+local function get_current_branch()
+  local handle = io.popen("git branch --show-current 2>/dev/null")
+  if not handle then
+    return nil
+  end
+  
+  local branch = handle:read("*a"):gsub("\n", "")
+  handle:close()
+  
+  return branch ~= "" and branch or nil
+end
+
+-- Get PR information for the current branch
+local function get_pr_info()
+  local branch = get_current_branch()
+  if not branch then
+    vim.notify("Not in a git branch", vim.log.levels.ERROR)
+    return nil
+  end
+  
+  local cmd = "gh pr view --json number,title,headRefOid,headRefName,baseRefName,url --jq ."
+  local handle = io.popen(cmd .. " 2>/dev/null")
+  if not handle then
+    return nil
+  end
+  
+  local output = handle:read("*a")
+  handle:close()
+  
+  if output == "" then
+    vim.notify("No PR found for branch " .. branch, vim.log.levels.WARN)
+    return nil
+  end
+  
+  local ok, pr_data = pcall(vim.json.decode, output)
+  if not ok or not pr_data then
+    vim.notify("Failed to parse PR data", vim.log.levels.ERROR)
+    return nil
+  end
+  
+  return pr_data
+end
+
+-- Get the base (merge-base) commit hash between the PR branch and target branch
+local function get_base_commit_hash(pr_data)
+  -- First, fetch the remote to ensure we have the latest refs
+  local fetch_cmd = "git fetch"
+  local fetch_handle = io.popen(fetch_cmd .. " 2>/dev/null")
+  if fetch_handle then
+    fetch_handle:read("*a")
+    fetch_handle:close()
+  else
+    vim.notify("Warning: Failed to fetch from remote", vim.log.levels.WARN)
+  end
+  
+  -- Get the remote name (usually 'origin')
+  local remote_cmd = "git remote"
+  local remote_handle = io.popen(remote_cmd .. " 2>/dev/null")
+  if not remote_handle then
+    vim.notify("Failed to get git remote", vim.log.levels.WARN)
+    return nil
+  end
+  
+  local remote = remote_handle:read("*l") or "origin"
+  remote_handle:close()
+  
+  -- Get the common ancestor commit between the remote PR target branch and PR head
+  -- This ensures we use the latest remote state even if local branches are behind
+  local cmd = string.format("git merge-base %s/%s %s", 
+    remote, pr_data.baseRefName, pr_data.headRefOid)
+  
+  vim.notify("Running: " .. cmd, vim.log.levels.DEBUG)
+  
+  local handle = io.popen(cmd .. " 2>&1")  -- Capture stderr too for error messages
+  if not handle then
+    vim.notify("Failed to execute merge-base command", vim.log.levels.ERROR)
+    return nil
+  end
+  
+  local output = handle:read("*a")
+  local exit_code = handle:close()
+  
+  if not exit_code then
+    vim.notify("Error getting base commit: " .. output, vim.log.levels.ERROR)
+    return nil
+  end
+  
+  local base_hash = output:gsub("\n", "")
+  
+  if base_hash == "" then
+    -- Fallback to trying with local branches if remote approach fails
+    vim.notify("Falling back to local branch merge-base", vim.log.levels.DEBUG)
+    cmd = string.format("git merge-base %s %s", pr_data.baseRefName, pr_data.headRefOid)
+    handle = io.popen(cmd .. " 2>/dev/null")
+    if handle then
+      base_hash = handle:read("*a"):gsub("\n", "")
+      handle:close()
+    end
+    
+    if base_hash == "" then
+      vim.notify("Could not determine base commit hash", vim.log.levels.WARN)
+      return nil
+    end
+  end
+  
+  vim.notify("Base commit hash: " .. base_hash:sub(1, 10) .. "...", vim.log.levels.DEBUG)
+  return base_hash
+end
+
+-- Get changed files in PR
+local function get_changed_files(pr_data)
+  local cmd = string.format("gh pr view %s --json files --jq '.files[].path'", pr_data.number)
+  local handle = io.popen(cmd .. " 2>/dev/null")
+  if not handle then
+    return {}
+  end
+  
+  local files = {}
+  for file in handle:lines() do
+    table.insert(files, file)
+  end
+  handle:close()
+  
+  return files
+end
+
+-- Create quickfix entries for files
+local function create_qf_entries(files)
+  local entries = {}
+  for _, file in ipairs(files) do
+    table.insert(entries, {
+      filename = file,
+      lnum = 1,
+      col = 1,
+      text = file,
+    })
+  end
+  return entries
+end
+
+-- Set quickfix list with PR information
+local function set_quickfix(pr_data, entries)
+  local title = string.format("PR: %s", pr_data.title)
+  local context = {
+    plugin = "ghp",
+    pr_number = pr_data.number,
+    pr_title = pr_data.title,
+    commit_hash = pr_data.headRefOid,
+    branch = pr_data.headRefName,
+    base_branch = pr_data.baseRefName,
+    base_commit_hash = pr_data.baseCommitHash,
+    url = pr_data.url
+  }
+  
+  vim.fn.setqflist({}, ' ', {
+    title = title,
+    context = context,
+    items = entries
+  })
+  
+  -- Store in cache with flattened attributes
+  M.cache.pr_number = pr_data.number
+  M.cache.pr_title = pr_data.title
+  M.cache.commit_hash = pr_data.headRefOid
+  M.cache.branch = pr_data.headRefName
+  M.cache.base_branch = pr_data.baseRefName
+  M.cache.base_commit_hash = pr_data.baseCommitHash
+  M.cache.url = pr_data.url
+  M.cache.title = title
+  M.cache.entries = entries
+  M.cache.created_at = os.time()
+  
+  -- Open quickfix window
+  vim.cmd("copen")
+  vim.notify("Loaded PR files into quickfix list", vim.log.levels.INFO)
+end
+
+-- Main function to review PR
+function M.review()
+  local pr_data = get_pr_info()
+  if not pr_data then
+    return
+  end
+  
+  -- Get the base commit hash (common ancestor)
+  local base_commit_hash = get_base_commit_hash(pr_data)
+  -- Attach it to the pr_data for convenience
+  pr_data.baseCommitHash = base_commit_hash
+  
+  local files = get_changed_files(pr_data)
+  if vim.tbl_isempty(files) then
+    vim.notify("No files changed in PR", vim.log.levels.WARN)
+    return
+  end
+  
+  local entries = create_qf_entries(files)
+  set_quickfix(pr_data, entries)
+  
+  -- Load comments for this PR
+  M.load_comments()
+end
+
+-- Load comments for a PR
+function M.load_comments()
+  -- Check if we have PR data
+  if not M.cache.pr_number then
+    vim.notify("No PR data available. Run GHPReview first.", vim.log.levels.WARN)
+    return nil
+  end
+  
+  -- Use GitHub CLI to fetch comments
+  local cmd = string.format("gh pr view %s --json comments --jq .", M.cache.pr_number)
+  local handle = io.popen(cmd .. " 2>/dev/null")
+  if not handle then
+    vim.notify("Failed to execute gh command to get PR comments", vim.log.levels.ERROR)
+    return nil
+  end
+  
+  local output = handle:read("*a")
+  handle:close()
+  
+  if output == "" then
+    vim.notify("No comments found or error retrieving comments", vim.log.levels.WARN)
+    return nil
+  end
+  
+  local ok, comments_data = pcall(vim.json.decode, output)
+  if not ok or not comments_data then
+    vim.notify("Failed to parse PR comments data", vim.log.levels.ERROR)
+    return nil
+  end
+  
+  -- Store in cache
+  M.cache.comments = comments_data.comments
+  
+  vim.notify(string.format("Loaded %d comments from PR #%s", 
+    #comments_data.comments, M.cache.pr_number), vim.log.levels.INFO)
+  
+  return comments_data.comments
+end
+
+-- Create a floating window with PR info
+function M.show_info()
+  -- Check if we have PR data
+  if not M.cache.pr_number then
+    vim.notify("No PR data available. Run GHPReview first.", vim.log.levels.WARN)
+    return
+  end
+  
+  -- Create content for the floating window
+  local lines = {
+    "PR #" .. M.cache.pr_number .. ": " .. M.cache.pr_title,
+    "",
+    "Branch: " .. M.cache.branch,
+    "Target: " .. M.cache.base_branch,
+    "Head Commit: " .. M.cache.commit_hash:sub(1, 10),
+    "Base Commit: " .. (M.cache.base_commit_hash and M.cache.base_commit_hash:sub(1, 10) or "Unknown"),
+    "URL: " .. M.cache.url,
+    "",
+  }
+  
+  -- Add comment information if available
+  if M.cache.comments then
+    table.insert(lines, "")
+    table.insert(lines, "----------------------------------------")
+    table.insert(lines, "PR Comments:")
+    table.insert(lines, "----------------------------------------")
+    
+    -- Add the comments
+    for i, comment in ipairs(M.cache.comments) do
+      if i <= 10 then -- Limit to first 10 comments to avoid too large window
+        table.insert(lines, "")
+        table.insert(lines, "@" .. comment.author.login .. " (" .. comment.createdAt .. "):")
+        -- Split comment body by newlines and add each line
+        for _, line in ipairs(vim.split(comment.body, "\n")) do
+          table.insert(lines, line)
+        end
+      else
+        table.insert(lines, "")
+        table.insert(lines, "... and " .. (#M.cache.comments - 10) .. " more comments")
+        break
+      end
+    end
+    table.insert(lines, "")
+  else
+    table.insert(lines, "Comments: Not loaded")
+  end
+  
+  table.insert(lines, "----------------------------------------")
+  table.insert(lines, "Files changed: " .. #M.cache.entries)
+  table.insert(lines, "----------------------------------------")
+  
+  -- Add list of files
+  for i, entry in ipairs(M.cache.entries) do
+    if i <= 20 then -- Limit to first 20 files
+      table.insert(lines, " - " .. entry.filename)
+    else
+      table.insert(lines, "... and " .. (#M.cache.entries - 20) .. " more files")
+      break
+    end
+  end
+  
+  -- Calculate window dimensions
+  local width = 80
+  local height = math.min(#lines, 30) -- Increased max height to 30 lines to show more content
+  
+  -- Calculate window position (centered)
+  local ui = vim.api.nvim_list_uis()[1]
+  local row = math.floor((ui.height - height) / 2)
+  local col = math.floor((ui.width - width) / 2)
+  
+  -- Create buffer
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  
+  -- Set buffer options
+  vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+  vim.api.nvim_buf_set_option(bufnr, "bufhidden", "wipe")
+  
+  -- Define window options
+  local opts = {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+    title = "PR Review Info",
+    title_pos = "center",
+  }
+  
+  -- Create window
+  local winnr = vim.api.nvim_open_win(bufnr, true, opts)
+  
+  -- Set window options
+  vim.api.nvim_win_set_option(winnr, "wrap", true) -- Enable wrapping for comments
+  vim.api.nvim_win_set_option(winnr, "cursorline", true)
+  
+  -- Set keymaps for the window
+  vim.api.nvim_buf_set_keymap(bufnr, "n", "q", "<cmd>close<CR>", { noremap = true, silent = true })
+  vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", "<cmd>close<CR>", { noremap = true, silent = true })
+  
+  -- Return window number in case needed
+  return winnr
+end
+
+return M 
