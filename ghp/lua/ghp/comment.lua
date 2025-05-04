@@ -251,53 +251,6 @@ function M.comment_line(start_line, end_line)
         end
         logger.debug("Full JSON response: " .. vim.inspect(json_data))
       end
-      
-      -- If the direct API call failed, attempt to use a regular comment with file/line reference
-      logger.warn("API comment failed, falling back to regular PR comment with line reference")
-      
-      -- Add the file/line reference to the comment
-      local line_range
-      if start_line == end_line then
-        line_range = string.format("%s:%d", repo_path, start_line)
-      else
-        line_range = string.format("%s:%d-%d", repo_path, start_line, end_line)
-      end
-      
-      local full_comment = string.format("**Comment on %s**\n\n%s", line_range, comment_body)
-      
-      -- Escape the comment but remove the quotes
-      local escaped_comment = vim.fn.shellescape(full_comment)
-      escaped_comment = escaped_comment:sub(2, -2)
-      
-      -- Use the simple comment command instead
-      cmd = string.format("gh pr comment %s --body %s", 
-        review.cache.pr_number, escaped_comment)
-      
-      logger.debug("Trying fallback command: " .. cmd)
-      
-      handle = io.popen(cmd .. " 2>&1")
-      if not handle then
-        local error_msg = "Failed to execute fallback gh pr comment command"
-        vim.notify(error_msg, vim.log.levels.ERROR)
-        logger.error(error_msg)
-        return
-      end
-      
-      output = handle:read("*a")
-      success = handle:close()
-      
-      logger.debug("Fallback command output: " .. output)
-      logger.debug("Fallback command exit status: " .. tostring(success))
-      
-      if success then
-        vim.notify("Comment submitted as general PR comment with line reference", vim.log.levels.INFO)
-        logger.info("Comment submitted as general PR comment with line reference")
-        review.load_comments()
-      else
-        local error_msg = "Failed to submit fallback comment: " .. output
-        vim.notify(error_msg, vim.log.levels.ERROR)
-        logger.error(error_msg)
-      end
     end
   end
   
