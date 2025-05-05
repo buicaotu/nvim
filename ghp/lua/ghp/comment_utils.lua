@@ -5,7 +5,7 @@ local logger = require("ghp.logger")
 -- @param opts: Table with the following fields:
 --   - title: Title of the window (string)
 --   - commented_lines: Lines being commented on, if any (table)
---   - on_submit: Callback when comment is submitted (function(comment_body))
+--   - on_submit: Callback when comment is submitted (function(temp_file_path))
 --   - on_close: Callback when window is closed without submission (function())
 function M.create_comment_window(opts)
   -- Set default options
@@ -16,6 +16,7 @@ function M.create_comment_window(opts)
   local on_close = opts.on_close or function() end
   
   logger.debug("Creating comment window with title: " .. title)
+ 
   
   -- Create a new buffer for the comment
   local bufnr = vim.api.nvim_create_buf(false, true)
@@ -102,11 +103,30 @@ function M.create_comment_window(opts)
     -- Join lines with newlines
     local comment_body = table.concat(comment_text, "\n")
     
+    -- Create a temporary file for the comment
+    local temp_file = os.tmpname()
+    logger.debug("Created temporary file for comment: " .. temp_file)
+    -- Write comment to temporary file
+    local file = io.open(temp_file, "w")
+    if not file then
+      vim.notify("Failed to write comment to temporary file", vim.log.levels.ERROR)
+      logger.error("Failed to write comment to temporary file: " .. temp_file)
+      return
+    end
+    
+    file:write(comment_body)
+    file:close()
+    
     -- Close the window and buffer
     vim.api.nvim_win_close(winnr, true)
     
-    -- Call the submit callback with the comment body
-    on_submit(comment_body)
+    -- Call the submit callback with the temp file path
+    on_submit(temp_file)
+
+    -- Delete the temporary file on close
+    os.remove(temp_file)
+    logger.debug("Removed temporary file: " .. temp_file)
+    close_window()
   end
   
   -- Function to handle closing the window

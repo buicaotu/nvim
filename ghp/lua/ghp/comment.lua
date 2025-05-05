@@ -16,25 +16,12 @@ function M.create_comment()
   logger.info("Creating new PR comment for PR #" .. review.cache.pr_number)
   
   -- Function to submit the comment
-  local function handle_submit(comment_body)
+  local function handle_submit(temp_file)
     -- Submit the comment using GitHub CLI
     vim.notify("Submitting comment to PR #" .. review.cache.pr_number .. "...", vim.log.levels.INFO)
     logger.info("Attempting to submit comment to PR #" .. review.cache.pr_number)
     
-    -- Create a temporary file for the comment content
-    local temp_file = os.tmpname()
-    local file = io.open(temp_file, "w")
-    if not file then
-      local error_msg = "Failed to create temporary file"
-      vim.notify(error_msg, vim.log.levels.ERROR)
-      logger.error(error_msg)
-      return
-    end
-    file:write(comment_body)
-    file:close()
-    
-    logger.debug("Temp file created at: " .. temp_file)
-    logger.debug("Comment body length: " .. #comment_body .. " characters")
+    logger.debug("Using temp file at: " .. temp_file)
     
     -- Use GitHub CLI to post the comment
     local cmd = string.format("gh pr comment %s --body-file %s", review.cache.pr_number, temp_file)
@@ -45,13 +32,11 @@ function M.create_comment()
       local error_msg = "Failed to execute gh command"
       vim.notify(error_msg, vim.log.levels.ERROR)
       logger.error(error_msg)
-      os.remove(temp_file)
       return
     end
     
     local output = handle:read("*a")
     local success = handle:close()
-    os.remove(temp_file)
     
     logger.debug("Command output: " .. output)
     logger.debug("Command exit status: " .. tostring(success))
@@ -174,7 +159,7 @@ function M.comment_line(start_line, end_line)
   local title = string.format("PR Line Comment - %s:%d-%d", repo_path, start_line, end_line)
   
   -- Function to submit the line comment
-  local function handle_submit(comment_body)
+  local function handle_submit(temp_file)
     -- Submit the comment using GitHub API through gh CLI
     vim.notify("Submitting line comment to PR #" .. review.cache.pr_number .. "...", vim.log.levels.INFO)
     logger.info(string.format("Attempting to submit line comment for PR #%s on %s:%d-%d", 
@@ -199,13 +184,9 @@ function M.comment_line(start_line, end_line)
     local api_endpoint = string.format("/repos/%s/%s/pulls/%s/comments", owner, repo, review.cache.pr_number)
     logger.debug("API endpoint: " .. api_endpoint)
     
-    -- Determine API parameters based on whether this is a single line or multi-line comment
-    local escaped_body = vim.fn.shellescape(comment_body)
-    -- Remove the surrounding quotes (first and last character)
-    escaped_body = escaped_body:sub(2, -2)
-    
-    local cmd = string.format([[gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" %s -f "body=%s" -f "commit_id=%s" -f "path=%s" -F "start_line=%d" -F "line=%d" -f "start_side=RIGHT" -f "side=RIGHT"]], 
-      api_endpoint, escaped_body, commit_hash, repo_path, start_line, end_line)
+    -- Use the temp file and pass it to stdin for the body parameter
+    local cmd = string.format([[cat %s | gh api --method POST -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" %s -F "body=-" -f "commit_id=%s" -f "path=%s" -F "start_line=%d" -F "line=%d" -f "start_side=RIGHT" -f "side=RIGHT"]], 
+      temp_file, api_endpoint, commit_hash, repo_path, start_line, end_line)
     
     logger.debug("Executing command: " .. cmd)
     
