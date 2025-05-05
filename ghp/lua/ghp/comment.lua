@@ -59,8 +59,6 @@ function M.create_comment()
     if success then
       vim.notify("Comment submitted successfully", vim.log.levels.INFO)
       logger.info("Comment submitted successfully to PR #" .. review.cache.pr_number)
-      -- Refresh comments
-      review.load_comments()
     else
       local error_msg = "Failed to submit comment: " .. output
       vim.notify(error_msg, vim.log.levels.ERROR)
@@ -228,8 +226,6 @@ function M.comment_line(start_line, end_line)
     if success then
       vim.notify("Line comment submitted successfully", vim.log.levels.INFO)
       logger.info("Line comment submitted successfully")
-      -- Refresh comments
-      review.load_comments()
     else
       local error_msg = "Failed to submit line comment"
       vim.notify(error_msg, vim.log.levels.ERROR)

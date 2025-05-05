@@ -19,9 +19,6 @@ M.cache = {
   title = nil,
   entries = nil,
   
-  -- PR comments data
-  comments = nil,
-  
   -- Timestamp
   created_at = nil
 }
@@ -274,48 +271,6 @@ function M.review()
   
   local entries = create_qf_entries(files)
   set_quickfix(pr_data, entries)
-  
-  -- Load comments for this PR
-  M.load_comments()
-end
-
--- Load comments for a PR
-function M.load_comments()
-  -- Check if we have PR data
-  if not M.cache.pr_number then
-    vim.notify("No PR data available. Run GHPReview first.", vim.log.levels.WARN)
-    return nil
-  end
-  
-  -- Use GitHub CLI to fetch comments
-  local cmd = string.format("gh pr view %s --json comments --jq .", M.cache.pr_number)
-  local handle = io.popen(cmd .. " 2>/dev/null")
-  if not handle then
-    vim.notify("Failed to execute gh command to get PR comments", vim.log.levels.ERROR)
-    return nil
-  end
-  
-  local output = handle:read("*a")
-  handle:close()
-  
-  if output == "" then
-    vim.notify("No comments found or error retrieving comments", vim.log.levels.WARN)
-    return nil
-  end
-  
-  local ok, comments_data = pcall(vim.json.decode, output)
-  if not ok or not comments_data then
-    vim.notify("Failed to parse PR comments data", vim.log.levels.ERROR)
-    return nil
-  end
-  
-  -- Store in cache
-  M.cache.comments = comments_data.comments
-  
-  vim.notify(string.format("Loaded %d comments from PR #%s", 
-    #comments_data.comments, M.cache.pr_number), vim.log.levels.INFO)
-  
-  return comments_data.comments
 end
 
 -- Create a floating window with PR info
@@ -338,33 +293,6 @@ function M.show_info()
     "URL: " .. M.cache.url,
     "",
   }
-  
-  -- Add comment information if available
-  if M.cache.comments then
-    table.insert(lines, "")
-    table.insert(lines, "----------------------------------------")
-    table.insert(lines, "PR Comments:")
-    table.insert(lines, "----------------------------------------")
-    
-    -- Add the comments
-    for i, comment in ipairs(M.cache.comments) do
-      if i <= 10 then -- Limit to first 10 comments to avoid too large window
-        table.insert(lines, "")
-        table.insert(lines, "@" .. comment.author.login .. " (" .. comment.createdAt .. "):")
-        -- Split comment body by newlines and add each line
-        for _, line in ipairs(vim.split(comment.body, "\n")) do
-          table.insert(lines, line)
-        end
-      else
-        table.insert(lines, "")
-        table.insert(lines, "... and " .. (#M.cache.comments - 10) .. " more comments")
-        break
-      end
-    end
-    table.insert(lines, "")
-  else
-    table.insert(lines, "Comments: Not loaded")
-  end
   
   table.insert(lines, "----------------------------------------")
   table.insert(lines, "Files changed: " .. #M.cache.entries)
