@@ -92,11 +92,46 @@ local function force_close_all_buffers()
   vim.cmd("enew")
 end
 
+-- Function to copy absolute path of current buffer to clipboard
+local function copy_absolute_path()
+  local buffer_path = vim.api.nvim_buf_get_name(0)
+  if buffer_path ~= "" then
+    vim.fn.setreg('+', buffer_path)
+    vim.notify("Copied absolute path to clipboard", vim.log.levels.INFO)
+  else
+    vim.notify("Current buffer has no path", vim.log.levels.WARN)
+  end
+end
+
+-- Function to copy relative path of current buffer to clipboard
+local function copy_relative_path()
+  local buffer_path = vim.api.nvim_buf_get_name(0)
+  if buffer_path ~= "" then
+    local working_dir = vim.fn.getcwd()
+    
+    -- Check if the file is in the working directory
+    if vim.startswith(buffer_path, working_dir) then
+      -- Get the relative path
+      local relative_path = buffer_path:sub(working_dir:len() + 2) -- +2 to account for the trailing slash
+      vim.fn.setreg('+', relative_path)
+      vim.notify("Copied relative path to clipboard", vim.log.levels.INFO)
+    else
+      -- If file is outside working directory, use absolute path instead
+      vim.fn.setreg('+', buffer_path)
+      vim.notify("Copied absolute path to clipboard (file outside working directory)", vim.log.levels.INFO)
+    end
+  else
+    vim.notify("Current buffer has no path", vim.log.levels.WARN)
+  end
+end
+
 -- Register commands
 function M.setup()
   core.register_command("buffer: close all buffers", close_all_buffers)
   core.register_command("buffer: close all other buffers", close_all_other_buffers)
   core.register_command("buffer: force close all buffers", force_close_all_buffers)
+  core.register_command("buffer: copy absolute path", copy_absolute_path)
+  core.register_command("buffer: copy relative path", copy_relative_path)
 end
 
 return M 
