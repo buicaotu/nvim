@@ -73,4 +73,11 @@ return {
   { 'rhysd/conflict-marker.vim' },
   { 'JoosepAlviste/nvim-ts-context-commentstring' },
   { 'lukas-reineke/indent-blankline.nvim' },
+
+  -- Rust
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^6', -- Recommended
+    lazy = false, -- This plugin is already lazy
+  },
 } 
