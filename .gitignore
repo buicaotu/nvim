@@ -43,3 +43,6 @@ luac.out
 .luarc.json
 
 session.vim
+
+# Work environment configuration
+.work-config.lua

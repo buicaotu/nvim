@@ -11,9 +11,18 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- Check if this is a work computer by checking hostname
-local hostname = vim.loop.os_gethostname()
-vim.g.work_env = hostname == "tuleworkmac.local"
+-- Load work configuration from Lua file
+local work_config_path = vim.fn.stdpath("config") .. "/.work-config.lua"
+local ok, work_config = pcall(function()
+  return loadfile(work_config_path)()
+end)
+if ok then
+  -- Set global variables from work config
+  for key, value in pairs(work_config) do
+    vim.g[key] = value
+  end
+end
+
 
 require "personal.keymaps"
 require "personal.options"
