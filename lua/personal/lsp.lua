@@ -76,8 +76,55 @@ vim.api.nvim_create_autocmd('LspAttach', {
 -- Setup mason
 require('mason').setup({})
 require("mason-lspconfig").setup({
-  ensure_installed = { "ts_ls", "eslint", "efm" },
-  automatic_installation = false,
+  ensure_installed = { "ts_ls", "eslint", "efm", "jdtls" },
+  automatic_installation = true,
+  handlers = {
+    function(server_name)
+      lspconfig[server_name].setup({})
+    end,
+    jdtls = function()
+      -- Custom handler for jdtls to ensure it's properly configured
+      lspconfig.jdtls.setup({
+        cmd = {
+          "/opt/homebrew/opt/openjdk@21/bin/java",
+          "-Dlog.level=WARN",
+          "--add-opens=java.base/java.lang=ALL-UNNAMED",
+          "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+          "--add-opens=java.base/java.io=ALL-UNNAMED",
+          "--add-opens=java.base/java.util=ALL-UNNAMED",
+          "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+          "-jar", vim.fn.glob(vim.fn.stdpath("data") .. "/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar"),
+          "-configuration", vim.fn.stdpath("data") .. "/mason/packages/jdtls/config_mac",
+          "-data", vim.fn.stdpath("cache") .. "/jdtls/workspace"
+        },
+        settings = {
+          java = {
+            maven = {
+              downloadSources = true,
+              updateSnapshots = true,
+            },
+            saveActions = {
+              organizeImports = true,
+            },
+            completion = {
+              favoriteStaticMembers = {
+                "org.junit.jupiter.api.Assertions.*",
+                "org.junit.jupiter.api.Assumptions.*",
+                "org.mockito.Mockito.*",
+                "org.mockito.ArgumentMatchers.*",
+              },
+              importOrder = {
+                "java",
+                "javax",
+                "com",
+                "org",
+              },
+            },
+          },
+        },
+      })
+    end,
+  },
 })
 
 lspconfig.eslint.setup({
