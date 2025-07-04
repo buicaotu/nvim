@@ -7,10 +7,10 @@ end
 
 -- Save and run this file
 vim.api.nvim_create_user_command('SS', function()
-    vim.cmd(':w')
-    local file_path = vim.fn.expand('%')
-    vim.cmd('source ' .. file_path)
-    print('source file ' .. file_path)
+  vim.cmd(':w')
+  local file_path = vim.fn.expand('%')
+  vim.cmd('source ' .. file_path)
+  print('source file ' .. file_path)
 end, {})
 
 function P(obj)
@@ -52,7 +52,7 @@ local function git_diff(commit)
 end
 
 -- find a base commit and perform diff and save it to the quickfix list
-local current_commit = nil
+local current_commit = 'origin/master'
 local function create_qflist(title, list)
   local qflist = {}
   for i, v in ipairs(list) do
@@ -86,7 +86,7 @@ local function diff_specific_commit(commit)
 end
 
 local function diff_branch_factory(base_branch)
-  return function ()
+  return function()
     diff_branch(base_branch)
   end
 end
@@ -114,8 +114,11 @@ vim.keymap.set("n", "<leader>dG", ':DiffGreen<CR>', opts)
 
 -- diff against current working directory
 vim.keymap.set("n", "<leader>ds", vim.cmd.Gvdiffsplit, opts)
+vim.keymap.set("n", "<leader>dS", function()
+  vim.cmd('Gvdiffsplit @')
+end, opts)
 -- diff against a specific commit
-vim.keymap.set("n", "<leader>Ds", function()
+vim.keymap.set("n", "<leader>DS", function()
   local commit = vim.fn.input("Commit: ")
   if commit ~= "" then
     vim.cmd('Gvdiffsplit ' .. commit)
@@ -127,4 +130,3 @@ vim.keymap.set('n', '<leader>dg', function()
 end, opts)
 
 vim.keymap.set("n", "<leader>mt", ':G mergetool <CR>', opts)
- 
