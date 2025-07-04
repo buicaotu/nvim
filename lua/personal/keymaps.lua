@@ -12,11 +12,6 @@ keymap("v", "p", '"_dP', opts)
 -- clipboard
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', opts)
 
--- terminal
--- https://neovim.io/doc/user/nvim_terminal_emulator.html
--- vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', opts)
--- vim.keymap.set('t', '<Char-0xAF>', '<C-\\><C-n>', opts)
-
 -- window
 vim.keymap.set('n', '<Tab>', '<C-^>', opts)
 vim.keymap.set('t', '<c-r>', function()
@@ -54,12 +49,6 @@ end, opts)
 vim.keymap.set({ "n", "v" }, "<leader>ae", function()
   require("avante.api").edit()
 end, opts)
-
--- Window resize
--- vim.keymap.set('n', '<M-Left>', ':vertical resize -5<CR>', opts)
--- vim.keymap.set('n', '<M-Right>', ':vertical resize +5<CR>', opts)
--- vim.keymap.set('n', '<M-Down>', ':resize -5<CR>', opts)
--- vim.keymap.set('n', '<M-Up>', ':resize +5<CR>', opts)
 
 -- The keymaps below are special characters sent to neovim from wezterm
 -- refer to .wezterm.lua for the keybindings
