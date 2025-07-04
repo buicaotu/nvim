@@ -39,9 +39,24 @@ return {
       },
     },
     bigfile = {},
+    terminal = {
+      win = {
+        keys = {
+          term_normal = {
+            "<Char-0xAF>",
+            function(self)
+              vim.cmd("stopinsert")
+            end,
+            mode = "t",
+            expr = true,
+            desc = "CMD-[ to exit terminal insert mode (mapped in wezterm)",
+          },
+        },
+      },
+    },
   },
   keys = {
-    { "<leader>bd", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
-    { "<leader>/",  function() Snacks.terminal.toggle(nil, { start_insert = true, auto_insert = false  }) end, desc = "Toggle Terminal" },
+    { "<leader>bd", function() Snacks.bufdelete() end,                                                        desc = "Delete Buffer" },
+    { "<leader>/",  function() Snacks.terminal.toggle(nil, { start_insert = true, auto_insert = false }) end, desc = "Toggle Terminal" },
   }
 }

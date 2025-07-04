@@ -14,7 +14,8 @@ vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', opts)
 
 -- terminal
 -- https://neovim.io/doc/user/nvim_terminal_emulator.html
-vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', opts)
+-- vim.keymap.set('t', '<Esc>', '<C-\\><C-n>', opts)
+-- vim.keymap.set('t', '<Char-0xAF>', '<C-\\><C-n>', opts)
 
 -- window
 vim.keymap.set('n', '<Tab>', '<C-^>', opts)
@@ -25,7 +26,8 @@ vim.keymap.set('t', '<c-r>', function()
 end, { expr = true })
 
 -- Close current window, do nothing if it's the last window
-vim.api.nvim_set_keymap('n', '<leader>q', ':lua if #vim.api.nvim_list_wins() > 1 then vim.cmd("q") end<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>q', ':lua if #vim.api.nvim_list_wins() > 1 then vim.cmd("q") end<CR>',
+  { noremap = true, silent = true })
 
 -- buffer
 vim.keymap.set('n', '<leader>x', ':bn|bd#<CR>', opts)
