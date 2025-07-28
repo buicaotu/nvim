@@ -1,29 +1,64 @@
-# My Neovim Configuration
+# Dotfiles
 
-This is my personal Neovim configuration.
+This repository contains my dotfiles, managed with GNU Stow.
 
-## Prerequisites
+## What's included
 
-- Neovim
-- [fzf](https://github.com/junegunn/fzf) - Fuzzy finder
-- [fd](https://github.com/sharkdp/fd) - A simple, fast and user-friendly alternative to find
-- [ripgrep](https://github.com/BurntSushi/ripgrep) - A line-oriented search tool
-- [Node.js](https://nodejs.org/) and npm - For JavaScript/TypeScript development
-- Git - For version control and git integration
+- Neovim configuration
+- Wezterm configuration
+- Git configuration
+- Github configuration
 
-## Installation
+## Setup
 
-1. Clone this repository to your Neovim config directory:
-
+1. Clone this repository:
 ```bash
-git clone git@github.com:buicaotu/nvim.git ~/.config/nvim
+git clone https://github.com/yourusername/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
 ```
 
-2. Install dependencies:
-
+2. Use stow to create symlinks:
 ```bash
-# macOS
-brew install fzf fd ripgrep node git
+# For all configurations
+stow */
+
+# For specific configurations
+stow nvim
+stow wezterm
+stow git
+stow gh
 ```
 
-3. Start Neovim and plugins will be automatically installed via lazy.nvim
+## Directory Structure
+
+```
+dotfiles/
+├── nvim/
+│   └── .config/
+│       └── nvim/
+│           └── ...
+├── wezterm/
+│   └── .wezterm.lua
+├── git/
+│   └── .gitconfig
+│   └── .gitignore_global
+└── gh/
+    └── .config/
+        └── gh/
+            └── config.yml
+```
+
+## How it works
+
+GNU Stow creates symlinks from the parent directory of where you run the command. For example:
+
+- When you run `stow nvim` from the `~/.dotfiles` directory, it will symlink the contents of `~/.dotfiles/nvim/.config/nvim` to `~/.config/nvim`
+- When you run `stow git` it will symlink `~/.dotfiles/git/.gitconfig` to `~/.gitconfig`
+
+## Adding new configurations
+
+To add a new configuration:
+
+1. Create a new directory in the root of this repo
+2. Mirror the directory structure from your home directory
+3. Run `stow <new-directory>` to create the symlinks

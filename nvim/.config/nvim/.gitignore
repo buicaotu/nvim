@@ -46,6 +46,3 @@ session.vim
 
 # Work environment configuration
 .work-config.lua
-
-# Stow temp files
-.stow-local-ignore

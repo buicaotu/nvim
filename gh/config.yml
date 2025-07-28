@@ -1,0 +1,33 @@
+# The current version of the config schema
+version: 1
+# What protocol to use when performing git operations. Supported values: ssh, https
+git_protocol: ssh
+# What editor gh should run when creating issues, pull requests, etc. If blank, will refer to environment.
+editor: nvim
+# When to interactively prompt. This is a global config that cannot be overridden by hostname. Supported values: enabled, disabled
+prompt: enabled
+# A pager program to send command output to, e.g. "less". Set the value to "cat" to disable the pager.
+pager:
+# Aliases allow you to create nicknames for gh commands
+aliases:
+    co: pr checkout
+    mypr: pr list --author "@me"
+    prco: '!gh pr list --author "@me" --json number,title,headRefName --template ''{{range .}}{{tablerow (printf "%v" .number) .title .headRefName}}{{end}}'' | fzf | awk ''{print $1}'' | xargs gh pr checkout'
+    prm: pr comment -b "@canva-ci-bot merge"
+    prt: pr comment -b "@canva-ci-bot test"
+    prw: pr comment -b "@canva-ci-bot trigger web-test-base"
+    prg: |-
+        pr comment -b @canva-ci-bot test"
+        ```
+        CANVA_CHECK_MERGE_REBASE=merge
+        CANVA_CHECK_MERGE_REBASE_BRANCH=green
+        ```
+        "
+    # prc: pr create --body ""
+    # create the PR with the last commit message as the title
+    prc: '!gh pr create --title "$(git log -1 --pretty=%B)" --body ""'
+    prv: pr view --web
+# The path to a unix socket through which send HTTP connections. If blank, HTTP traffic will be handled by net/http.DefaultTransport.
+http_unix_socket:
+# What web browser gh should use when opening URLs. If blank, will refer to environment.
+browser:
