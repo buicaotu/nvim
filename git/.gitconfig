@@ -68,3 +68,12 @@ show = diff-so-fancy | less --tabs=4 -RFX
 [color]
   ui = auto
 
+[maintenance]
+	repo = /Users/tu/work/infrastructure
+	repo = /Users/tu/work/android-app
+	repo = /Users/tu/work/tu-dotfiles
+	repo = /Users/tu/work/canva
+	repo = /Users/tu/work/ios-app
+	repo = /Users/tu/work/dynamic-config
+	repo = /Users/tu/work/mermaid-canva-app
+	repo = /Users/tu/work/nzhang-zh-pytops-automation
