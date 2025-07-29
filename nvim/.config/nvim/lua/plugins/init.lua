@@ -40,7 +40,7 @@ return {
     url = "org-2562356@github.com:Canva/dprint-vim-plugin.git",
     event = "BufWritePre",
     lazy = true,
-    enabled = vim.g.enable_dprint,
+    enabled = vim.g.enable_dprint or false,
   },
 
   -- Testing
@@ -60,8 +60,8 @@ return {
   { "tpope/vim-dispatch" },
 
   -- UI
-  { 'j-hui/fidget.nvim', opts = {} },
-  { 'echasnovski/mini.move', version = false, opts = {} },
+  { 'j-hui/fidget.nvim',                          opts = {} },
+  { 'echasnovski/mini.move',                      version = false, opts = {} },
 
   -- Misc
   { "tpope/vim-surround" },
@@ -76,6 +76,6 @@ return {
   {
     'mrcjkb/rustaceanvim',
     version = '^6', -- Recommended
-    lazy = false, -- This plugin is already lazy
+    lazy = false,   -- This plugin is already lazy
   },
-} 
+}
