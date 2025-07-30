@@ -24,7 +24,7 @@ return {
           return require("codecompanion.adapters").extend("copilot", {
             schema = {
               model = {
-                default = "gpt-4",
+                default = "gpt-4.1",
               },
             },
           })
@@ -38,37 +38,22 @@ return {
       },
       display = {
         action_palette = {
-          provider = "fzf",
+          provider = "fzf_lua",
         },
         chat = {
           window = {
             layout = "vertical",
-            width = 0.45,
+            position = "right",
+            width = 0.3,
             height = 0.8,
           },
           show_settings = true,
           show_token_count = true,
         },
       },
-      keymaps = {
-        ["<leader>aa"] = {
-          modes = { "n", "v" },
-          callback = "strategies.chat.new",
-          description = "New chat",
-        },
-        ["<leader>ae"] = {
-          modes = { "v" },
-          callback = "strategies.inline.start",
-          description = "Inline assistant",
-        },
-        ["<leader>ar"] = {
-          modes = { "n" },
-          callback = function()
-            require("codecompanion").setup({})
-          end,
-          description = "Refresh CodeCompanion",
-        },
-      },
     })
+
+    vim.keymap.set("n", "<leader>aa", "<cmd>CodeCompanionChat<CR>", { desc = "New chat" })
+    vim.keymap.set("n", "<leader>ap", "<cmd>CodeCompanionActions<CR>", { desc = "CodeCompanion Actions" })
   end,
-} 
+}
