@@ -39,16 +39,9 @@ vim.keymap.set('i', '<C-J>', 'copilot#Accept("\\<CR>")', {
   replace_keycodes = false
 })
 vim.g.copilot_no_tab_map = true
+vim.g.copilot_filetypes = { ["*"] = true }
 
-vim.keymap.set({ "n", "v" }, "<leader>aa", function()
-  require("avante.api").ask()
-end, opts)
-vim.keymap.set({ "v" }, "<leader>ar", function()
-  require("avante.api").refresh()
-end, opts)
-vim.keymap.set({ "n", "v" }, "<leader>ae", function()
-  require("avante.api").edit()
-end, opts)
+
 
 -- The keymaps below are special characters sent to neovim from wezterm
 -- refer to .wezterm.lua for the keybindings
